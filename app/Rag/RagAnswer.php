@@ -22,9 +22,10 @@ final readonly class RagAnswer
 
     /**
      * One entry per retrieved chunk, in retrieval (ranking) order, with
-     * the document it belongs to.
+     * the document it belongs to and its cosine distance to the question
+     * (lower = more relevant; the threshold lives in rag.retrieval).
      *
-     * @return list<array{chunk_id: int, title: string, url: string}>
+     * @return list<array{chunk_id: int, title: string, url: string, distance: float}>
      */
     public function sources(): array
     {
@@ -33,6 +34,7 @@ final readonly class RagAnswer
                 'chunk_id' => $chunk->id,
                 'title' => $chunk->document->title,
                 'url' => $chunk->document->url,
+                'distance' => round($chunk->neighbor_distance, 4),
             ])
             ->all());
     }

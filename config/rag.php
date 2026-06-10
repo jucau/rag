@@ -59,6 +59,11 @@ return [
     'retrieval' => [
         // How many chunks are injected into the generation prompt.
         'top_k' => (int) env('RAG_TOP_K', 5),
+
+        // Chunks farther than this cosine distance are considered noise.
+        // Calibrated on 2026-06-11: relevant questions land at 0.41-0.49,
+        // off-topic ones at 0.77+ (ADR-0014).
+        'max_distance' => (float) env('RAG_MAX_DISTANCE', 0.65),
     ],
 
     /*

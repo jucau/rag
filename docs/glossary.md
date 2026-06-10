@@ -17,6 +17,11 @@ documents.
 process in a single request, prompt and answer included. One reason we
 retrieve a few relevant chunks instead of sending entire documents.
 
+**Contextual chunking** — Prefixing every chunk with its origin
+(article and section titles) before embedding it, so the passage stays
+attached to the entity it describes. Cures cross-entity confusion in
+retrieval and gives the generation model grounds for arbitration.
+
 **Cosine similarity** — A measure of how close two vectors point in the
 same direction, ignoring their length. 1 = same meaning, 0 = unrelated.
 pgvector exposes the cosine *distance* operator `<=>` (distance =

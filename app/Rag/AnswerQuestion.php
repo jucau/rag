@@ -18,25 +18,38 @@ use Pgvector\Laravel\Vector;
  * grounded prompt → let the chat provider write the answer.
  *
  * Each phase is timed and every query is logged to rag_queries
- * (ADR-0011), so "where is it slow?" is answered by data.
+ * (ADR-0011). Retrieval is guarded by a relevance threshold
+ * (ADR-0014): off-corpus questions are answered without calling the
+ * generation model at all.
  */
 final readonly class AnswerQuestion
 {
+    public const string OUT_OF_CORPUS_ANSWER = "Cette question semble hors du corpus : aucun passage suffisamment proche n'a été trouvé. Essayez une question sur le football français (Ligue 1, clubs, joueurs…).";
+
     private const string SYSTEM_PROMPT = <<<'PROMPT'
-        You are a question-answering assistant working over a document corpus.
+        You are a question-answering assistant working over a French
+        football document corpus.
 
         Rules:
-        - Answer ONLY from the provided context. If the context does not
-          contain the answer, say so plainly — never invent facts.
-        - Answer in the same language as the question.
-        - Be concise and factual.
-        - When the context allows it, mention which source(s) you used.
+        - Answer ONLY from the provided context. State a fact only if it
+          is explicitly written there. If the exact information is
+          missing, say so plainly — never guess, and never turn a vague
+          description into a precise fact.
+        - Every context block starts with its origin, e.g.
+          [Article : Olympique lyonnais — Section : Stades]. A fact about
+          an entity must come from a block whose article is about that
+          entity. When sources conflict, prefer the article dedicated to
+          the question's subject and mention the conflict explicitly.
+        - Answer in French, unless the question is clearly written in
+          another language.
+        - Be concise and factual. Cite the sources you used.
         PROMPT;
 
     public function __construct(
         private EmbeddingProvider $embeddings,
         private ChatProvider $chat,
         private int $topK,
+        private float $maxDistance,
     ) {
     }
 
@@ -47,22 +60,35 @@ final readonly class AnswerQuestion
         $vector = new Vector($this->embeddings->embed($question));
         $embeddingMs = $this->elapsedMs($started);
 
-        // 2. Retrieve the top-k chunks by cosine distance (pgvector <=>).
+        // 2. Retrieve the top-k chunks by cosine distance (pgvector <=>),
+        //    keeping only those close enough to be meaningful (ADR-0014).
         $started = hrtime(true);
         $chunks = DocumentChunk::query()
             ->nearestNeighbors('embedding', $vector, Distance::Cosine)
             ->with('document')
             ->take($this->topK)
-            ->get();
+            ->get()
+            ->filter(fn (DocumentChunk $chunk): bool => $this->distanceOf($chunk) <= $this->maxDistance)
+            ->values();
         $retrievalMs = $this->elapsedMs($started);
 
-        // 3. Generate, grounded in the retrieved context.
+        // 3. Generate, grounded in the retrieved context. If nothing
+        //    relevant was retrieved, don't call the model at all: it
+        //    could only hallucinate from off-topic passages.
         $started = hrtime(true);
-        $answer = $this->chat->chat(self::SYSTEM_PROMPT, $this->buildUserPrompt($question, $chunks));
+
+        if ($chunks->isEmpty()) {
+            $answer = self::OUT_OF_CORPUS_ANSWER;
+            $provider = 'guard (out-of-corpus)';
+        } else {
+            $answer = $this->chat->chat(self::SYSTEM_PROMPT, $this->buildUserPrompt($question, $chunks));
+            $provider = $this->chat->describe();
+        }
+
         $generationMs = $this->elapsedMs($started);
 
         $timings = new RagTimings($embeddingMs, $retrievalMs, $generationMs);
-        $ragAnswer = new RagAnswer($answer, $chunks, $this->chat->describe(), $timings);
+        $ragAnswer = new RagAnswer($answer, $chunks, $provider, $timings);
 
         RagQuery::query()->create([
             'question' => $question,
@@ -81,6 +107,14 @@ final readonly class AnswerQuestion
     private function elapsedMs(int|float $startedNs): int
     {
         return (int) round((hrtime(true) - $startedNs) / 1_000_000);
+    }
+
+    /**
+     * Cosine distance computed by the nearestNeighbors scope.
+     */
+    private function distanceOf(DocumentChunk $chunk): float
+    {
+        return $chunk->neighbor_distance;
     }
 
     /**

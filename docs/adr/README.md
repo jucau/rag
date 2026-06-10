@@ -23,3 +23,5 @@ the time the choice is made.
 | [0010](0010-ollama-default-generation-claude-alternative.md) | Ollama as default generation provider, Claude as alternative | Accepted |
 | [0011](0011-log-rag-queries-with-timings.md) | Log every RAG query with per-phase timings | Accepted |
 | [0012](0012-inertia-react-chat-ui.md) | Inertia.js + React chat UI | Accepted |
+| [0013](0013-section-aware-contextual-chunking.md) | Section-aware contextual chunking | Accepted |
+| [0014](0014-retrieval-relevance-threshold.md) | Retrieval relevance threshold and hardened grounding prompt | Accepted |

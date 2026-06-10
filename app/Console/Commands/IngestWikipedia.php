@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Models\Document;
-use App\Rag\Chunking\TextChunker;
+use App\Rag\Chunking\SectionAwareChunker;
 use App\Rag\Corpus\WikipediaClient;
 use App\Rag\Corpus\WikipediaPage;
 use App\Rag\Embeddings\EmbeddingProvider;
@@ -26,20 +26,21 @@ class IngestWikipedia extends Command
     #[\Override]
     protected $signature = 'rag:ingest-wikipedia
         {--title=* : Article title(s) to ingest}
-        {--category=* : Category name(s) whose pages will all be ingested (e.g. "Catégorie:…")}';
+        {--category=* : Category name(s) whose pages will all be ingested (e.g. "Catégorie:…")}
+        {--refresh : Re-ingest every document already in the database (re-fetch, re-chunk, re-embed)}';
 
     #[\Override]
     protected $description = 'Fetch Wikipedia articles, chunk them, embed the chunks and store them';
 
     public function handle(
         WikipediaClient $wikipedia,
-        TextChunker $chunker,
+        SectionAwareChunker $chunker,
         EmbeddingProvider $embeddings,
     ): int {
         $titles = $this->collectTitles($wikipedia);
 
         if ($titles === []) {
-            $this->error('Nothing to ingest: pass at least one --title or --category.');
+            $this->error('Nothing to ingest: pass at least one --title or --category, or use --refresh.');
 
             return self::FAILURE;
         }
@@ -74,6 +75,14 @@ class IngestWikipedia extends Command
         /** @var list<string> $categories */
         $categories = $this->option('category');
 
+        if ((bool) $this->option('refresh')) {
+            // Embeddings depend on the chunking strategy and the model:
+            // whenever either changes, the whole corpus must be rebuilt.
+            /** @var list<string> $existing */
+            $existing = Document::query()->where('source', 'wikipedia')->pluck('title')->all();
+            $titles = array_merge($titles, $existing);
+        }
+
         foreach ($categories as $category) {
             $members = $wikipedia->categoryMembers($category);
             $this->info(sprintf('Category "%s": %d page(s).', $category, count($members)));
@@ -86,7 +95,7 @@ class IngestWikipedia extends Command
 
     private function ingestPage(
         WikipediaPage $page,
-        TextChunker $chunker,
+        SectionAwareChunker $chunker,
         EmbeddingProvider $embeddings,
     ): int {
         // Idempotent by (source, external_id): re-ingesting refreshes.
@@ -104,7 +113,7 @@ class IngestWikipedia extends Command
         // a content update.
         $document->chunks()->delete();
 
-        $chunks = $chunker->chunk($page->content);
+        $chunks = $chunker->chunk($page->title, $page->content);
         $index = 0;
 
         foreach (array_chunk($chunks, self::EMBEDDING_BATCH_SIZE) as $batch) {

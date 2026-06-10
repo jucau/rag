@@ -22,6 +22,7 @@ use Pgvector\Laravel\Vector;
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property-read Document $document document_id is NOT NULL + cascade: always present
+ * @property-read float $neighbor_distance present on results of the nearestNeighbors scope
  */
 class DocumentChunk extends Model
 {

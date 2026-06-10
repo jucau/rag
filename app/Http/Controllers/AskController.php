@@ -24,6 +24,7 @@ class AskController extends Controller
             embeddings: $embeddings,
             chat: $factory->make($provider),
             topK: config()->integer('rag.retrieval.top_k'),
+            maxDistance: config()->float('rag.retrieval.max_distance'),
         );
 
         $result = $service->ask($request->string('question')->value());

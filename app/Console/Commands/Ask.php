@@ -33,6 +33,7 @@ class Ask extends Command
             embeddings: $embeddings,
             chat: $factory->make($provider),
             topK: config()->integer('rag.retrieval.top_k'),
+            maxDistance: config()->float('rag.retrieval.max_distance'),
         );
 
         $result = $service->ask($question);
