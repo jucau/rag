@@ -69,3 +69,8 @@ tinker:
 
 composer-install:
 	@$(EXEC) composer install
+
+ollama-pull:
+	@$(DC) exec ollama ollama pull embeddinggemma
+
+setup: start-wait composer-install ollama-pull migrate

@@ -8,6 +8,22 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      ollama:
+        condition: service_healthy
+
+  ollama:
+    # Local inference server: serves the embedding model over a simple REST API
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama:/root/.ollama
+    healthcheck:
+      # The ollama binary is also a client: "ollama list" probes the server
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
 
   db:
     # Image PostgreSQL 17 avec l'extension pgvector préinstallée
@@ -28,3 +44,4 @@ services:
 
 volumes:
   dbdata:
+  ollama:
