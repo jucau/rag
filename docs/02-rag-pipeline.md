@@ -185,7 +185,9 @@ Takeaways:
 
 - **The vector search is essentially free.** Even without the HNSW index
   it would be fast at this corpus size; the database is nowhere near
-  being the bottleneck.
+  being the bottleneck. Longitudinal data point: growing the corpus
+  3× (809 → 2,411 chunks on 2026-06-10) moved retrieval from ~14ms to
+  ~31ms — the sub-linear scaling HNSW promises.
 - **Generation on CPU dominates everything.** Two costs add up: reading
   the prompt (our 5 chunks ≈ a few thousand tokens of *prompt
   processing*) and writing the answer at ~5–15 tokens/s.
