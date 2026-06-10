@@ -113,6 +113,22 @@ prompt with the **grounding rules** (answer only from the context, admit
 ignorance, cite sources) and a user message containing the top-k chunks —
 each labelled with its source title and URL — followed by the question.
 
+### Enabling the Claude provider
+
+A claude.ai subscription (Pro/Max) does **not** include API access — the
+Anthropic API is a separate, pay-as-you-go product. To use
+`--provider=claude`:
+
+1. Create an account on [console.anthropic.com](https://console.anthropic.com)
+   and buy credits (Billing — $5 minimum).
+2. Create a key under *API Keys* and set it in `.env` as
+   `ANTHROPIC_API_KEY` (gitignored).
+
+Order of magnitude with `claude-opus-4-8` ($5/M input, $25/M output
+tokens): one `rag:ask` call ≈ 2,500 prompt tokens + a few hundred output
+tokens ≈ **$0.02–0.03 per question**. `CLAUDE_MODEL` in `.env` can point
+to a cheaper model (e.g. `claude-sonnet-4-6`).
+
 ### Observed first results (gemma3:4b, 2026-06-10)
 
 A side-by-side worth recording. Asked *"Qui est l'entraîneur de
