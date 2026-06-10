@@ -17,4 +17,4 @@ the time the choice is made.
 | [0004](0004-claude-for-answer-generation.md) | Claude (Anthropic API) for answer generation | Accepted |
 | [0005](0005-code-quality-tooling-from-reference-project.md) | Code quality tooling mirrored from the reference project | Accepted |
 | [0006](0006-local-embeddings-with-ollama.md) | Local embeddings with Ollama (embeddinggemma) | Accepted |
-| [0007](0007-embedding-provider-contract.md) | EmbeddingProvider contract (driver pattern) | Accepted |
+| [0007](0007-embedding-provider-contract.md) | EmbeddingProvider contract (driver pattern) | Accepted |\n| [0008](0008-wikipedia-football-corpus.md) | French Wikipedia football articles as the test corpus | Accepted |
