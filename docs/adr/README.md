@@ -19,3 +19,4 @@ the time the choice is made.
 | [0006](0006-local-embeddings-with-ollama.md) | Local embeddings with Ollama (embeddinggemma) | Accepted |
 | [0007](0007-embedding-provider-contract.md) | EmbeddingProvider contract (driver pattern) | Accepted |\n| [0008](0008-wikipedia-football-corpus.md) | French Wikipedia football articles as the test corpus | Accepted |
 | [0009](0009-paragraph-aware-chunking-with-overlap.md) | Paragraph-aware chunking with overlap | Accepted |
+| [0010](0010-ollama-default-generation-claude-alternative.md) | Ollama as default generation provider, Claude as alternative | Accepted |
