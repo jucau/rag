@@ -48,9 +48,19 @@ Calibration data behind the 0.65 threshold (best-chunk distance):
 | "meilleure recette de tarte aux pommes ?" | 0.77 |
 | "explique-moi la mécanique quantique" | 0.82 |
 
-## Re-test after improvements
+## Re-test after improvements (2026-06-11, corpus re-embedded: 2,659 chunks)
 
-*(to be completed after full corpus re-ingestion)*
+| Question | Before | After |
+|---|---|---|
+| OL home stadium | ❌ *"previously played at Geoffroy-Guichard"* (ASSE's stadium) | ✅ Groupama Stadium as the main answer, Gerland correctly in the past — the cross-entity confusion is gone |
+| OL founding date | ⚠️ *"founded in 1896 … created in 1950"* (raw contradiction) | ✅ Coherent, arbitrated narrative: *"fondé en 1896 sous le nom de Racing Club de Lyon, puis en 1950 sous le nom d'Olympique lyonnais"* |
+| Juninho's nickname | ⚠️ Description promoted to a "nickname" | ⚠️ **Still fabricated** — the model now quotes an even longer description as a "surnom". The prompt rule alone doesn't fix this on a 4B model |
+| *"tié trop le sang purée"* | 🤖 100s of CPU, answer in English about RC Lens | ✅ Guard answer in **0.2s**, generation skipped (`provider: guard (out-of-corpus)`) |
+
+**Score: 3 of 4 failure cases fixed.** The remaining one (soft
+fabrication) is the failure mode attributed to model size in the
+taxonomy above — the designated test is re-asking with
+`--provider=claude` once an API key is available.
 
 ## Candidate next steps (not implemented)
 
