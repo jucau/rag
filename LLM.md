@@ -2,9 +2,20 @@
 
 Educational project to learn how Retrieval-Augmented Generation works:
 Laravel 12 + PostgreSQL 17/pgvector (vector store) + Claude (generation,
-`anthropic-ai/sdk`) + Voyage AI (embeddings).
+`anthropic-ai/sdk`) + Ollama/embeddinggemma (local embeddings).
 
 ## Conventions
+
+### Documentation (first-class citizen)
+
+- Everything lives in [docs/](docs/README.md), written in **English**.
+- **Concepts explained during working sessions must be captured in the
+  docs** (`docs/02-rag-pipeline.md` or the glossary) — explanations must
+  not stay only in chat.
+- **Every structural decision gets an ADR** in `docs/adr/` at the time
+  it is made.
+- The [glossary](docs/glossary.md) is maintained continuously: every new
+  key term gets an entry.
 
 ### Git
 
