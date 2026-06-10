@@ -130,6 +130,25 @@ came from a historical section — retrieval ranks by similarity, not by
 **recency**. Grounded ≠ up to date: a RAG is only as fresh as what
 retrieval surfaces.
 
+### Ambiguous questions on a heterogeneous corpus (2026-06-10)
+
+After enriching the corpus with ~15 Olympique lyonnais articles, asked
+*"Combien de titres de champion de France l'OL a-t-il remportés ?"*:
+
+- the answer came back *"quatorze titres consécutifs entre 2007 et
+  2020"* — which is the **women's team** record (OL Lyonnes); the men's
+  team has 7 (2002–2008). Retrieval surfaced chunks about both squads
+  (similar vocabulary, same club names), and the small model blended
+  them without flagging the ambiguity.
+- Re-asked with *"l'équipe masculine… de Ligue 1"*: correct answer,
+  *"sept titres consécutifs entre 2002 et 2008"*.
+
+Lesson: **a grounded answer can still attribute facts to the wrong
+entity** when the corpus contains near-duplicate vocabulary (men's vs
+women's teams, club vs subsidiary). Mitigations to explore: question
+rewriting, chunk metadata filters (per-document scoping), or a stronger
+generation model that flags the ambiguity itself.
+
 ## Where the code lives
 
 | Concern | Location |
