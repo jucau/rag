@@ -16,6 +16,7 @@ final readonly class RagAnswer
         public string $answer,
         public Collection $chunks,
         public string $provider,
+        public RagTimings $timings,
     ) {
     }
 }

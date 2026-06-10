@@ -149,6 +149,38 @@ women's teams, club vs subsidiary). Mitigations to explore: question
 rewriting, chunk metadata filters (per-document scoping), or a stronger
 generation model that flags the ambiguity itself.
 
+## Performance: where does the time go?
+
+Every query is timed per phase and logged to the `rag_queries` table
+(ADR-0011) — question, answer, grounding chunk ids, and millisecond
+timings. `rag:ask` prints the same breakdown.
+
+Measured on 2026-06-10 (CPU-only Docker on macOS, 809 chunks,
+gemma3:4b):
+
+| Phase | Time | Share |
+|---|---|---|
+| Embedding the question (Ollama) | ~190–270ms | ~2% |
+| Similarity search (pgvector, HNSW) | **~14ms** | ~0.1% |
+| Generation (gemma3:4b on CPU) | **~10–12s** | **~98%** |
+
+Takeaways:
+
+- **The vector search is essentially free.** Even without the HNSW index
+  it would be fast at this corpus size; the database is nowhere near
+  being the bottleneck.
+- **Generation on CPU dominates everything.** Two costs add up: reading
+  the prompt (our 5 chunks ≈ a few thousand tokens of *prompt
+  processing*) and writing the answer at ~5–15 tokens/s.
+- Levers, in order of impact: a faster generation provider
+  (`--provider=claude` — the API is typically 5–10× faster here), a
+  smaller local model, fewer/shorter chunks (`RAG_TOP_K`), or running
+  Ollama natively on the host to use the Apple GPU (breaks the
+  Docker-only rule, ADR-0002).
+
+The log table doubles as an **evaluation dataset**: question + retrieved
+chunks + answer is exactly what RAG evaluation frameworks consume.
+
 ## Where the code lives
 
 | Concern | Location |
@@ -161,6 +193,7 @@ generation model that flags the ambiguity itself.
 | Documents / chunks | `app/Models/Document.php`, `app/Models/DocumentChunk.php` |
 | Chat contract + providers | `app/Rag/Chat/` ([ADR-0010](adr/0010-ollama-default-generation-claude-alternative.md)) |
 | Online pipeline (ask) | `app/Rag/AnswerQuestion.php`, `app/Console/Commands/Ask.php` |
+| Query log | `app/Models/RagQuery.php` ([ADR-0011](adr/0011-log-rag-queries-with-timings.md)) |
 | RAG configuration | `config/rag.php` |
 
 ### Running an ingestion

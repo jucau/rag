@@ -34,15 +34,21 @@ class Ask extends Command
             topK: config()->integer('rag.retrieval.top_k'),
         );
 
-        $started = microtime(true);
         $result = $service->ask($question);
-        $elapsed = microtime(true) - $started;
 
         $this->newLine();
         $this->info($result->answer);
         $this->newLine();
 
-        $this->line(sprintf('<comment>Provider:</comment> %s — %.1fs', $result->provider, $elapsed));
+        $timings = $result->timings;
+        $this->line(sprintf(
+            '<comment>Provider:</comment> %s — %.1fs (embedding %dms | retrieval %dms | generation %dms)',
+            $result->provider,
+            $timings->totalMs() / 1000,
+            $timings->embeddingMs,
+            $timings->retrievalMs,
+            $timings->generationMs,
+        ));
         $this->line('<comment>Sources:</comment>');
 
         $result->chunks
