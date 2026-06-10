@@ -44,6 +44,30 @@ Two consequences worth internalising:
   full re-ingestion of the corpus. This is a real-world RAG constraint,
   not a quirk of our setup.
 
+#### Is 768 dimensions a standard?
+
+It is a **frequent convention, not an interoperability standard**. 768 is
+inherited from BERT's hidden size; models commonly ship with 384, 512,
+768, 1024, 1536 or 3072 dimensions. But dimension equality buys you
+almost nothing:
+
+> **Changing the embedding model means re-embedding everything, with
+> ~100% probability — even if the new model has the same dimension.**
+
+Two different models produce incompatible vector spaces: a 768-dim vector
+from `embeddinggemma` and a 768-dim vector from another model are not
+comparable — their axes simply don't carry the same "meaning". A matching
+dimension only spares you the schema migration (`vector(768)` stays
+valid), never the re-ingestion. This makes the embedding model one of the
+*stickiest* choices in a RAG system.
+
+One nuance: some recent models (including `embeddinggemma`) are trained
+with **Matryoshka Representation Learning (MRL)** — their vectors can be
+*truncated* (768 → 512 → 256 → 128) with little quality loss, because the
+most important information is packed into the first components. This is
+the exception that proves the rule: truncation only works *within the
+same model*, never across models.
+
 In this project embeddings are computed **locally** by Ollama serving
 `embeddinggemma` (Google, ~300M parameters, multilingual — our documents
 will often be French). See [ADR-0006](adr/0006-local-embeddings-with-ollama.md).

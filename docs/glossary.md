@@ -50,6 +50,12 @@ API does remotely for generation.
 that produces text from a prompt. Knows only its training data — hence
 RAG to ground it in private, up-to-date documents.
 
+**Matryoshka (MRL, Matryoshka Representation Learning)** — A training
+technique that packs the most important information into the first
+components of a vector, so it can be truncated (e.g. 768 → 256
+dimensions) with little quality loss. Only valid within the same model.
+`embeddinggemma` supports it.
+
 **Ollama** — A local inference server. Runs open-weight models on your
 machine and exposes them over a simple REST API (`/api/embed` for
 embeddings). Runs as a Docker service in this project.
