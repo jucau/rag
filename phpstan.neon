@@ -1,0 +1,21 @@
+includes:
+    - ./vendor/larastan/larastan/extension.neon
+
+parameters:
+    parallel:
+        processTimeout: 60.0
+    paths:
+        - app
+        - bootstrap/app.php
+        - config
+        - database
+        - routes
+        - tests
+    # Le niveau 10 (max) est le plus strict
+    level: max
+    ignoreErrors: []
+    excludePaths: []
+    databaseMigrationsPath:
+        - database/migrations
+    treatPhpDocTypesAsCertain: false
+    tmpDir: storage/phpstan
