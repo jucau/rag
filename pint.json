@@ -1,0 +1,28 @@
+{
+    "preset": "psr12",
+    "rules": {
+        "binary_operator_spaces": {
+            "default": "single_space"
+        },
+        "concat_space": {
+            "spacing": "one"
+        },
+        "declare_strict_types": true,
+        "fully_qualified_strict_types": {
+            "import_symbols": true
+        },
+        "ordered_imports": true,
+        "phpdoc_align": {
+            "align": "left"
+        },
+        "php_unit_attributes": true,
+        "php_unit_method_casing": {
+            "case": "snake_case"
+        },
+        "php_unit_test_annotation": {
+            "style": "annotation"
+        },
+        "single_line_empty_body": false,
+        "type_declaration_spaces": true
+    }
+}
