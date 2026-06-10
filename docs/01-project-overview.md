@@ -45,7 +45,7 @@ those into the prompt. The model stays generic; the knowledge stays fresh.
 
 | Piece | Choice | Why (short version — full reasoning in the ADRs) |
 |---|---|---|
-| Framework | Laravel 12 | The framework the author works with daily |
+| Framework | Laravel 13 | The framework the author works with daily |
 | Vector store | PostgreSQL 17 + pgvector | Vector search in plain SQL, works with Eloquent — no new database to learn ([ADR-0003](adr/0003-postgresql-pgvector-as-vector-store.md)) |
 | Embeddings | Ollama + `embeddinggemma`, local | Small models are excellent at this; free, private, and shows how local inference is wired ([ADR-0006](adr/0006-local-embeddings-with-ollama.md)) |
 | Generation | Claude (Anthropic API) | Answer quality requires a frontier model; small local models fall short ([ADR-0004](adr/0004-claude-for-answer-generation.md)) |

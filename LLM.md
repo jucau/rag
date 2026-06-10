@@ -1,8 +1,14 @@
 # RAG — Pedagogical Laravel RAG project
 
 Educational project to learn how Retrieval-Augmented Generation works:
-Laravel 12 + PostgreSQL 17/pgvector (vector store) + Claude (generation,
-`anthropic-ai/sdk`) + Ollama/embeddinggemma (local embeddings).
+Laravel 13 + PostgreSQL 17/pgvector (vector store) + Ollama (local
+embeddings & default generation) + Claude (generation alternative,
+`anthropic-ai/sdk`).
+
+AI agents: also read [AGENTS.md](AGENTS.md) (Laravel Boost guidelines)
+— Boost is an MCP server exposing project tools (database schema,
+tinker, versioned docs search…), configured in `.mcp.json` to run
+through `docker compose exec`.
 
 ## Conventions
 
@@ -53,3 +59,4 @@ Tests run with `make testing`. Full CI suite: `make ci`.
 |---|---|---|
 | app | PHP 8.4 (Alpine) + `php artisan serve` | 8000 |
 | db | `pgvector/pgvector:pg17` | 5432 |
+| ollama | `ollama/ollama` | 11434 |
