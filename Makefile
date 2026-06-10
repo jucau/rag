@@ -71,6 +71,7 @@ composer-install:
 	@$(EXEC) composer install
 
 ollama-pull:
+	@$(DC) exec ollama ollama pull gemma3:4b
 	@$(DC) exec ollama ollama pull embeddinggemma
 
 setup: start-wait composer-install ollama-pull migrate

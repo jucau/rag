@@ -101,6 +101,35 @@ question ──embed──▶ vector ──search──▶ top-k chunks ─┐
 question ────────────────────────────────────────────┘
 ```
 
+## Asking a question
+
+```bash
+docker compose exec app php artisan rag:ask "Qui est l'entraîneur de l'OM ?"
+docker compose exec app php artisan rag:ask "..." --provider=claude   # compare
+```
+
+The generation prompt is built by `app/Rag/AnswerQuestion.php`: a system
+prompt with the **grounding rules** (answer only from the context, admit
+ignorance, cite sources) and a user message containing the top-k chunks —
+each labelled with its source title and URL — followed by the question.
+
+### Observed first results (gemma3:4b, 2026-06-10)
+
+A side-by-side worth recording. Asked *"Qui est l'entraîneur de
+l'Olympique de Marseille actuellement ?"*:
+
+- **Without RAG** (bare model): *"Pierre Saint-Maximin"* — a textbook
+  **hallucination** (no such coach; the model blended a player's name).
+- **With RAG**: a grounded answer citing the OM article, with sources —
+  but describing the 2023 coaching changes rather than today's coach.
+
+The second result is instructive twice over: the *current* coach sits in
+the article's **infobox**, which is a template stripped by
+`prop=extracts` (see the limitation below); and the best-ranked chunk
+came from a historical section — retrieval ranks by similarity, not by
+**recency**. Grounded ≠ up to date: a RAG is only as fresh as what
+retrieval surfaces.
+
 ## Where the code lives
 
 | Concern | Location |
@@ -111,6 +140,8 @@ question ───────────────────────�
 | Corpus fetching | `app/Rag/Corpus/WikipediaClient.php` ([ADR-0008](adr/0008-wikipedia-football-corpus.md)) |
 | Ingestion command | `app/Console/Commands/IngestWikipedia.php` |
 | Documents / chunks | `app/Models/Document.php`, `app/Models/DocumentChunk.php` |
+| Chat contract + providers | `app/Rag/Chat/` ([ADR-0010](adr/0010-ollama-default-generation-claude-alternative.md)) |
+| Online pipeline (ask) | `app/Rag/AnswerQuestion.php`, `app/Console/Commands/Ask.php` |
 | RAG configuration | `config/rag.php` |
 
 ### Running an ingestion

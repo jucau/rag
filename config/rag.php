@@ -28,6 +28,41 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Chat (generation)
+    |--------------------------------------------------------------------------
+    |
+    | Which provider writes the final answer (ADR-0010). Default is the
+    | local Ollama model — free, private, key-less; Claude is the
+    | frontier-quality alternative (requires ANTHROPIC_API_KEY).
+    |
+    */
+
+    'chat' => [
+        'provider' => env('RAG_CHAT_PROVIDER', 'ollama'),
+
+        'ollama' => [
+            'model' => env('OLLAMA_CHAT_MODEL', 'gemma3:4b'),
+        ],
+
+        'claude' => [
+            'api_key' => env('ANTHROPIC_API_KEY', ''),
+            'model' => env('CLAUDE_MODEL', 'claude-opus-4-8'),
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Retrieval
+    |--------------------------------------------------------------------------
+    */
+
+    'retrieval' => [
+        // How many chunks are injected into the generation prompt.
+        'top_k' => (int) env('RAG_TOP_K', 5),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Corpus
     |--------------------------------------------------------------------------
     */

@@ -21,6 +21,7 @@ use Pgvector\Laravel\Vector;
  * @property Vector $embedding
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
+ * @property-read Document $document document_id is NOT NULL + cascade: always present
  */
 class DocumentChunk extends Model
 {

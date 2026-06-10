@@ -36,8 +36,19 @@ never comparable.
 ~300M parameters) specialised in producing embeddings. Distinct from a
 generative LLM: it outputs vectors, not text.
 
-**Generation** — The phase where an LLM (here Claude) writes the final
-answer, using the retrieved chunks injected into its prompt.
+**Generation** — The phase where an LLM (gemma3:4b locally by default,
+Claude as the alternative — ADR-0010) writes the final answer, using the
+retrieved chunks injected into its prompt.
+
+**Grounding** — Constraining an LLM to answer from supplied context
+(our retrieved chunks) rather than from its training data. Enforced by
+the system prompt; the antidote to hallucination — though a grounded
+answer is only as fresh and complete as the retrieved context.
+
+**Hallucination** — A confident but fabricated LLM answer (e.g. our
+local model inventing coach "Pierre Saint-Maximin"). Frequent on small
+models and on facts past the training cutoff; the problem RAG exists to
+mitigate.
 
 **HNSW (Hierarchical Navigable Small World)** — An index structure for
 *approximate* nearest-neighbour search. Exact search compares the query
