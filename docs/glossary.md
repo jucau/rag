@@ -39,6 +39,13 @@ generative LLM: it outputs vectors, not text.
 **Generation** — The phase where an LLM (here Claude) writes the final
 answer, using the retrieved chunks injected into its prompt.
 
+**HNSW (Hierarchical Navigable Small World)** — An index structure for
+*approximate* nearest-neighbour search. Exact search compares the query
+vector to every stored vector (fine at small scale, linear cost); an HNSW
+index keeps similarity queries fast as the corpus grows, at the price of
+occasionally missing the true closest neighbour. Created on our
+`document_chunks.embedding` column.
+
 **Ingestion** — The offline phase of a RAG: chunking documents, embedding
 each chunk, and storing chunks + vectors in the vector store.
 

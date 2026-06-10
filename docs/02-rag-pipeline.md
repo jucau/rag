@@ -107,7 +107,37 @@ question ───────────────────────�
 |---|---|
 | Embedding contract | `app/Rag/Embeddings/EmbeddingProvider.php` |
 | Ollama implementation | `app/Rag/Embeddings/OllamaEmbeddingProvider.php` |
+| Chunking | `app/Rag/Chunking/TextChunker.php` ([ADR-0009](adr/0009-paragraph-aware-chunking-with-overlap.md)) |
+| Corpus fetching | `app/Rag/Corpus/WikipediaClient.php` ([ADR-0008](adr/0008-wikipedia-football-corpus.md)) |
+| Ingestion command | `app/Console/Commands/IngestWikipedia.php` |
+| Documents / chunks | `app/Models/Document.php`, `app/Models/DocumentChunk.php` |
 | RAG configuration | `config/rag.php` |
+
+### Running an ingestion
+
+```bash
+docker compose exec app php artisan rag:ingest-wikipedia \
+  --title="Championnat de France de football 2025-2026" \
+  --category="Catégorie:Club de Ligue 1"
+```
+
+Ingestion is **idempotent**: a document is identified by its
+`(source, external_id)` pair, so re-running the command refreshes content
+and rebuilds chunks instead of duplicating them. Re-ingesting regularly is
+how the corpus stays *recent* — the whole point of ADR-0008.
+
+### Known limitation: Wikipedia extracts strip tables
+
+`prop=extracts` returns clean plain text but **drops wiki tables** — and
+on Wikipedia, the most "factual" data (standings, results grids, squad
+lists) lives in tables. A retrieval test on *"Quel club est en tête du
+championnat ?"* correctly surfaces the season article's « Classement »
+section… whose table content is missing from the extract.
+
+Lesson: **what you extract bounds what your RAG can answer** — the
+extraction format matters as much as chunking or the embedding model.
+Possible future improvements: parse the wikitext tables, or complement
+the corpus with openfootball results (public domain, plain text).
 
 The application depends on the `EmbeddingProvider` *contract*, never on the
 Ollama class directly — the concrete provider is bound in

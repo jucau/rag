@@ -18,3 +18,4 @@ the time the choice is made.
 | [0005](0005-code-quality-tooling-from-reference-project.md) | Code quality tooling mirrored from the reference project | Accepted |
 | [0006](0006-local-embeddings-with-ollama.md) | Local embeddings with Ollama (embeddinggemma) | Accepted |
 | [0007](0007-embedding-provider-contract.md) | EmbeddingProvider contract (driver pattern) | Accepted |\n| [0008](0008-wikipedia-football-corpus.md) | French Wikipedia football articles as the test corpus | Accepted |
+| [0009](0009-paragraph-aware-chunking-with-overlap.md) | Paragraph-aware chunking with overlap | Accepted |
