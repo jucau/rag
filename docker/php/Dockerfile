@@ -7,6 +7,9 @@ RUN apk add --no-cache postgresql-dev git unzip \
 # Composer embarqué : tout passe par "docker compose exec app composer ..."
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
 
+# La génération locale (Ollama sur CPU) peut dépasser les 30s par défaut
+RUN echo "max_execution_time=120" > /usr/local/etc/php/conf.d/zz-rag.ini
+
 WORKDIR /var/www/html
 
 EXPOSE 8000

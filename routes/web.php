@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-use Illuminate\Contracts\View\Factory;
-use Illuminate\Contracts\View\View;
+use App\Http\Controllers\AskController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
+use Inertia\Response;
 
-Route::get('/', function (): Factory|View {
-    return view('welcome');
-});
+Route::get('/', fn (): Response => Inertia::render('Chat'))->name('home');
+
+Route::post('/ask', AskController::class)->name('ask');

@@ -22,3 +22,4 @@ the time the choice is made.
 | [0009](0009-paragraph-aware-chunking-with-overlap.md) | Paragraph-aware chunking with overlap | Accepted |
 | [0010](0010-ollama-default-generation-claude-alternative.md) | Ollama as default generation provider, Claude as alternative | Accepted |
 | [0011](0011-log-rag-queries-with-timings.md) | Log every RAG query with per-phase timings | Accepted |
+| [0012](0012-inertia-react-chat-ui.md) | Inertia.js + React chat UI | Accepted |

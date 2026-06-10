@@ -11,6 +11,16 @@ services:
       ollama:
         condition: service_healthy
 
+  node:
+    # Frontend tooling (Vite dev server with HMR) — no node on the host
+    image: node:22-alpine
+    working_dir: /var/www/html
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/var/www/html
+
   ollama:
     # Local inference server: serves the embedding model over a simple REST API
     image: ollama/ollama:0.30.7

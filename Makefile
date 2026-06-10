@@ -3,6 +3,7 @@
 DC = docker compose
 EXEC = $(DC) exec app
 ARTISAN = $(EXEC) php artisan
+NODE = $(DC) run --rm --no-deps node
 
 quality: rector pint stan
 ci: quality testing
@@ -74,4 +75,10 @@ ollama-pull:
 	@$(DC) exec ollama ollama pull gemma3:4b
 	@$(DC) exec ollama ollama pull embeddinggemma
 
-setup: start-wait composer-install ollama-pull migrate
+npm-install:
+	@$(NODE) npm install
+
+npm-build:
+	@$(NODE) npm run build
+
+setup: start-wait composer-install ollama-pull migrate npm-build
