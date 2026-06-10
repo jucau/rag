@@ -12,10 +12,12 @@ use Illuminate\Console\Command;
 
 class Ask extends Command
 {
+    #[\Override]
     protected $signature = 'rag:ask
         {question : The question to answer from the ingested corpus}
         {--provider= : Override the chat provider ("ollama" or "claude") to compare answers}';
 
+    #[\Override]
     protected $description = 'Answer a question using the RAG pipeline (retrieve + generate)';
 
     public function handle(

@@ -23,10 +23,12 @@ class IngestWikipedia extends Command
      */
     private const int EMBEDDING_BATCH_SIZE = 16;
 
+    #[\Override]
     protected $signature = 'rag:ingest-wikipedia
         {--title=* : Article title(s) to ingest}
         {--category=* : Category name(s) whose pages will all be ingested (e.g. "Catégorie:…")}';
 
+    #[\Override]
     protected $description = 'Fetch Wikipedia articles, chunk them, embed the chunks and store them';
 
     public function handle(

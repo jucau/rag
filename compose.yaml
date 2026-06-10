@@ -13,7 +13,7 @@ services:
 
   ollama:
     # Local inference server: serves the embedding model over a simple REST API
-    image: ollama/ollama:latest
+    image: ollama/ollama:0.30.7
     ports:
       - "11434:11434"
     volumes:
@@ -27,7 +27,7 @@ services:
 
   db:
     # Image PostgreSQL 17 avec l'extension pgvector préinstallée
-    image: pgvector/pgvector:pg17
+    image: pgvector/pgvector:0.8.2-pg17
     environment:
       POSTGRES_DB: rag
       POSTGRES_USER: rag

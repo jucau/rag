@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Document extends Model
 {
+    #[\Override]
     protected $guarded = [];
 
     /**

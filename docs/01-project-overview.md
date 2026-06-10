@@ -76,6 +76,6 @@ project ever did local *generation*, running Ollama natively on the host
 
 | Service | Image | Port | Role |
 |---|---|---|---|
-| `app` | PHP 8.4 (Alpine) | 8000 | Laravel application |
+| `app` | PHP 8.5 (Alpine) | 8000 | Laravel application |
 | `db` | `pgvector/pgvector:pg17` | 5432 | Relational data + vector store |
 | `ollama` | `ollama/ollama` | 11434 | Local embedding inference |

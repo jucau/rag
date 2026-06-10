@@ -27,6 +27,7 @@ class DocumentChunk extends Model
 {
     use HasNeighbors;
 
+    #[\Override]
     protected $guarded = [];
 
     /**

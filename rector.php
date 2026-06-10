@@ -50,7 +50,7 @@ return RectorConfig::configure()
         LaravelSetList::ARRAY_STR_FUNCTIONS_TO_STATIC_CALL,
     ])
     ->withPhpSets(
-        php84: true,
+        php85: true,
     )
     ->withSkip([
         ArrowFunctionDelegatingCallToFirstClassCallableRector::class,

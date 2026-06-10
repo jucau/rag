@@ -25,6 +25,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class RagQuery extends Model
 {
+    #[\Override]
     protected $guarded = [];
 
     #[\Override]
