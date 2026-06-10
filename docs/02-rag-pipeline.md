@@ -168,8 +168,9 @@ generation model that flags the ambiguity itself.
 ## Performance: where does the time go?
 
 Every query is timed per phase and logged to the `rag_queries` table
-(ADR-0011) — question, answer, grounding chunk ids, and millisecond
-timings. `rag:ask` prints the same breakdown.
+(ADR-0011) — question, answer, grounding sources (per-chunk JSON with
+document title and URL, in ranking order), and millisecond timings.
+`rag:ask` prints the same breakdown.
 
 Measured on 2026-06-10 (CPU-only Docker on macOS, 809 chunks,
 gemma3:4b):

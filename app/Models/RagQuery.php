@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $question
  * @property string $answer
  * @property string $provider
- * @property list<int> $chunk_ids
+ * @property list<array{chunk_id: int, title: string, url: string}> $sources
  * @property int $embedding_ms
  * @property int $retrieval_ms
  * @property int $generation_ms
@@ -32,7 +32,7 @@ class RagQuery extends Model
     protected function casts(): array
     {
         return [
-            'chunk_ids' => 'array',
+            'sources' => 'array',
         ];
     }
 }

@@ -16,7 +16,9 @@ Instrument the online pipeline (`AnswerQuestion`) and persist one row
 per query in a `rag_queries` table:
 
 - `question`, `answer`, `provider`
-- `chunk_ids` (the retrieved context — which chunks grounded the answer)
+- `sources` (JSON, one entry per retrieved chunk in ranking order:
+  `{chunk_id, title, url}` — denormalised because chunks are rebuilt on
+  re-ingestion, so bare chunk ids would go stale)
 - `embedding_ms`, `retrieval_ms`, `generation_ms`, `total_ms`
 
 `rag:ask` prints the same breakdown after each answer.

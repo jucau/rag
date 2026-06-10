@@ -19,4 +19,21 @@ final readonly class RagAnswer
         public RagTimings $timings,
     ) {
     }
+
+    /**
+     * One entry per retrieved chunk, in retrieval (ranking) order, with
+     * the document it belongs to.
+     *
+     * @return list<array{chunk_id: int, title: string, url: string}>
+     */
+    public function sources(): array
+    {
+        return array_values($this->chunks
+            ->map(fn (DocumentChunk $chunk): array => [
+                'chunk_id' => $chunk->id,
+                'title' => $chunk->document->title,
+                'url' => $chunk->document->url,
+            ])
+            ->all());
+    }
 }

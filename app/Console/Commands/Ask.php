@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Models\DocumentChunk;
 use App\Rag\AnswerQuestion;
 use App\Rag\Chat\ChatProviderFactory;
 use App\Rag\Embeddings\EmbeddingProvider;
@@ -53,11 +52,11 @@ class Ask extends Command
         ));
         $this->line('<comment>Sources:</comment>');
 
-        $result->chunks
-            ->unique(fn (DocumentChunk $chunk): int => $chunk->document_id)
-            ->each(function (DocumentChunk $chunk): void {
-                $this->line(sprintf('  — %s (%s)', $chunk->document->title, $chunk->document->url));
-            });
+        $documents = collect($result->sources())->unique('url');
+
+        foreach ($documents as $source) {
+            $this->line(sprintf('  — %s (%s)', $source['title'], $source['url']));
+        }
 
         return self::SUCCESS;
     }

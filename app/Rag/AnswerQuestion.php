@@ -62,19 +62,20 @@ final readonly class AnswerQuestion
         $generationMs = $this->elapsedMs($started);
 
         $timings = new RagTimings($embeddingMs, $retrievalMs, $generationMs);
+        $ragAnswer = new RagAnswer($answer, $chunks, $this->chat->describe(), $timings);
 
         RagQuery::query()->create([
             'question' => $question,
             'answer' => $answer,
-            'provider' => $this->chat->describe(),
-            'chunk_ids' => $chunks->modelKeys(),
+            'provider' => $ragAnswer->provider,
+            'sources' => $ragAnswer->sources(),
             'embedding_ms' => $timings->embeddingMs,
             'retrieval_ms' => $timings->retrievalMs,
             'generation_ms' => $timings->generationMs,
             'total_ms' => $timings->totalMs(),
         ]);
 
-        return new RagAnswer($answer, $chunks, $this->chat->describe(), $timings);
+        return $ragAnswer;
     }
 
     private function elapsedMs(int|float $startedNs): int
