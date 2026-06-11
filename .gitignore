@@ -27,3 +27,4 @@ Homestead.yaml
 Thumbs.db
 /storage/phpstan
 /storage/rector
+/storage/rag-runs

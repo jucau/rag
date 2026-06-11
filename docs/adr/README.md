@@ -31,3 +31,4 @@ the time the choice is made.
 | [0018](0018-nginx-php-fpm.md) | nginx + PHP-FPM instead of php artisan serve | Accepted |
 | [0019](0019-llama32-default-after-50q-benchmark.md) | llama3.2:3b becomes the default local model | Accepted |
 | [0020](0020-split-fetch-and-index.md) | Split ingestion into fetch and index, with hash-based staleness | Accepted |
+| [0021](0021-structured-execution-logs.md) | Structured execution logs for batch commands | Accepted |

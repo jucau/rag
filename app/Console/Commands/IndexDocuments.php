@@ -6,7 +6,9 @@ namespace App\Console\Commands;
 
 use App\Models\Document;
 use App\Rag\Indexing\DocumentIndexer;
+use App\Rag\Observability\ExecutionLog;
 use Illuminate\Console\Command;
+use Throwable;
 
 /**
  * The "Transform & Load" half of ingestion (ADR-0020): rebuilds chunks
@@ -23,7 +25,35 @@ class IndexDocuments extends Command
     #[\Override]
     protected $description = 'Chunk and embed stale documents (content changed, strategy changed, or never indexed)';
 
+    /**
+     * @var array<string, int>
+     */
+    private array $stats = ['indexed' => 0, 'fresh' => 0, 'chunks' => 0];
+
     public function handle(DocumentIndexer $indexer): int
+    {
+        $log = new ExecutionLog('rag:index', [
+            'titles' => $this->option('title'),
+            'force' => (bool) $this->option('force'),
+        ]);
+
+        try {
+            $exit = $this->performRun($indexer, $log);
+            $path = $log->finish($exit === self::SUCCESS ? 'success' : 'failure', $this->stats);
+        } catch (Throwable $throwable) {
+            // Crash-safe (ADR-0021): the log keeps every event recorded
+            // before the failure, plus the error itself.
+            $log->finish('failure', $this->stats, $throwable->getMessage());
+
+            throw $throwable;
+        }
+
+        $this->line(sprintf('<comment>Execution log:</comment> %s', $path));
+
+        return $exit;
+    }
+
+    private function performRun(DocumentIndexer $indexer, ExecutionLog $log): int
     {
         $query = Document::query()->orderBy('id');
 
@@ -39,13 +69,12 @@ class IndexDocuments extends Command
         $this->info(sprintf('Chunking strategy version: %s', DocumentIndexer::VERSION));
 
         $startedAt = hrtime(true);
-        $stats = ['indexed' => 0, 'fresh' => 0, 'chunks' => 0];
 
         foreach ($query->lazy() as $document) {
             $reason = $force ? 'forced' : $document->indexingReason(DocumentIndexer::VERSION);
 
             if ($reason === null) {
-                ++$stats['fresh'];
+                ++$this->stats['fresh'];
 
                 continue;
             }
@@ -60,9 +89,15 @@ class IndexDocuments extends Command
                 $previous > 0 ? sprintf(' (was %d)', $previous) : '',
                 $reason,
             ));
+            $log->event('indexed', [
+                'title' => $document->title,
+                'reason' => $reason,
+                'chunks' => $count,
+                'previous_chunks' => $previous,
+            ]);
 
-            ++$stats['indexed'];
-            $stats['chunks'] += $count;
+            ++$this->stats['indexed'];
+            $this->stats['chunks'] += $count;
         }
 
         $elapsed = (int) round((hrtime(true) - $startedAt) / 1_000_000_000);
@@ -72,9 +107,9 @@ class IndexDocuments extends Command
             'Done in %dm%02ds — %d document(s) re-indexed (%d chunks), %d already fresh.',
             intdiv($elapsed, 60),
             $elapsed % 60,
-            $stats['indexed'],
-            $stats['chunks'],
-            $stats['fresh'],
+            $this->stats['indexed'],
+            $this->stats['chunks'],
+            $this->stats['fresh'],
         ));
 
         return self::SUCCESS;

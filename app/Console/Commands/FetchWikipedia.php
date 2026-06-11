@@ -8,8 +8,10 @@ use App\Models\Document;
 use App\Rag\Corpus\WikipediaClient;
 use App\Rag\Corpus\WikipediaPage;
 use App\Rag\Corpus\WikipediaRevision;
+use App\Rag\Observability\ExecutionLog;
 use Illuminate\Console\Command;
 use Illuminate\Support\Sleep;
+use Throwable;
 
 /**
  * The "Extract" half of ingestion (ADR-0020): scrapes Wikipedia and
@@ -29,7 +31,38 @@ class FetchWikipedia extends Command
     #[\Override]
     protected $description = 'Fetch Wikipedia articles and store their raw content (no chunking — see rag:index)';
 
+    /**
+     * @var array<string, int>
+     */
+    private array $stats = ['created' => 0, 'refreshed' => 0, 'unchanged' => 0, 'not_found' => 0, 'without_wikitext' => 0];
+
     public function handle(WikipediaClient $wikipedia): int
+    {
+        $log = new ExecutionLog('rag:fetch-wikipedia', [
+            'titles' => $this->option('title'),
+            'categories' => $this->option('category'),
+            'depth' => (int) $this->option('depth'),
+            'limit' => (int) $this->option('limit'),
+            'all' => (bool) $this->option('all'),
+        ]);
+
+        try {
+            $exit = $this->performRun($wikipedia, $log);
+            $path = $log->finish($exit === self::SUCCESS ? 'success' : 'failure', $this->stats);
+        } catch (Throwable $throwable) {
+            // Crash-safe (ADR-0021): the log keeps every event recorded
+            // before the failure, plus the error itself.
+            $log->finish('failure', $this->stats, $throwable->getMessage());
+
+            throw $throwable;
+        }
+
+        $this->line(sprintf('<comment>Execution log:</comment> %s', $path));
+
+        return $exit;
+    }
+
+    private function performRun(WikipediaClient $wikipedia, ExecutionLog $log): int
     {
         $titles = $this->collectTitles($wikipedia);
 
@@ -49,7 +82,6 @@ class FetchWikipedia extends Command
         $this->info(sprintf('Fetching %d article(s)…', count($titles)));
 
         $startedAt = hrtime(true);
-        $stats = ['fetched' => 0, 'unchanged' => 0, 'skipped' => 0];
 
         foreach ($titles as $title) {
             $existing = Document::query()
@@ -64,7 +96,8 @@ class FetchWikipedia extends Command
 
                 if ($latest !== null && $latest === $existing->revision_id) {
                     $this->line(sprintf('– %s — unchanged (rev %d), skipped.', $title, $latest));
-                    ++$stats['unchanged'];
+                    $log->event('unchanged', ['title' => $title, 'revision_id' => $latest]);
+                    ++$this->stats['unchanged'];
 
                     continue;
                 }
@@ -75,7 +108,8 @@ class FetchWikipedia extends Command
 
             if (! $page instanceof WikipediaPage) {
                 $this->warn(sprintf('⚠ "%s": page not found or empty, skipped.', $title));
-                ++$stats['skipped'];
+                $log->event('not_found', ['title' => $title]);
+                ++$this->stats['not_found'];
 
                 continue;
             }
@@ -95,6 +129,8 @@ class FetchWikipedia extends Command
                 ],
             );
 
+            $status = $document->wasRecentlyCreated ? 'created' : 'refreshed';
+
             $this->line(sprintf(
                 '✔ %s — rev %s%s%s',
                 $page->title,
@@ -102,8 +138,18 @@ class FetchWikipedia extends Command
                 $document->wasRecentlyCreated ? ' (new)' : '',
                 $revision instanceof WikipediaRevision ? '' : ' — ⚠ no wikitext',
             ));
+            $log->event($status, [
+                'title' => $page->title,
+                'revision_id' => $revision->revisionId ?? null,
+                'content_hash' => $contentHash,
+                'wikitext' => $revision instanceof WikipediaRevision,
+            ]);
 
-            ++$stats['fetched'];
+            ++$this->stats[$status];
+
+            if (! $revision instanceof WikipediaRevision) {
+                ++$this->stats['without_wikitext'];
+            }
 
             // Politeness towards the Wikimedia API between articles.
             Sleep::usleep(200_000);
@@ -113,12 +159,14 @@ class FetchWikipedia extends Command
 
         $this->newLine();
         $this->info(sprintf(
-            'Done in %dm%02ds — %d fetched, %d unchanged, %d skipped. Run rag:index to (re)build stale chunks.',
+            'Done in %dm%02ds — %d created, %d refreshed, %d unchanged, %d not found, %d without wikitext. Run rag:index to (re)build stale chunks.',
             intdiv($elapsed, 60),
             $elapsed % 60,
-            $stats['fetched'],
-            $stats['unchanged'],
-            $stats['skipped'],
+            $this->stats['created'],
+            $this->stats['refreshed'],
+            $this->stats['unchanged'],
+            $this->stats['not_found'],
+            $this->stats['without_wikitext'],
         ));
 
         return self::SUCCESS;

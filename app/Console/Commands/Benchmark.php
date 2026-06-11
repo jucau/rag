@@ -9,7 +9,9 @@ use App\Rag\Chat\ChatProviderFactory;
 use App\Rag\Chat\ChatProviderName;
 use App\Rag\Chat\OllamaModel;
 use App\Rag\Embeddings\EmbeddingProvider;
+use App\Rag\Observability\ExecutionLog;
 use Illuminate\Console\Command;
+use Throwable;
 
 /**
  * Runs the versioned question set (benchmark/questions.json) against
@@ -27,9 +29,38 @@ class Benchmark extends Command
     #[\Override]
     protected $description = 'Run the benchmark question set against local models, logging every run';
 
+    /**
+     * @var array<string, int>
+     */
+    private array $stats = ['runs' => 0];
+
     public function handle(
         EmbeddingProvider $embeddings,
         ChatProviderFactory $factory,
+    ): int {
+        $log = new ExecutionLog('rag:benchmark', [
+            'file' => $this->option('file'),
+            'models' => $this->option('model'),
+        ]);
+
+        try {
+            $exit = $this->performRun($embeddings, $factory, $log);
+            $path = $log->finish($exit === self::SUCCESS ? 'success' : 'failure', $this->stats);
+        } catch (Throwable $throwable) {
+            $log->finish('failure', $this->stats, $throwable->getMessage());
+
+            throw $throwable;
+        }
+
+        $this->line(sprintf('<comment>Execution log:</comment> %s', $path));
+
+        return $exit;
+    }
+
+    private function performRun(
+        EmbeddingProvider $embeddings,
+        ChatProviderFactory $factory,
+        ExecutionLog $log,
     ): int {
         $questions = $this->loadQuestions();
 
@@ -81,6 +112,17 @@ class Benchmark extends Command
                     $result->timings->totalMs() / 1000,
                     mb_substr(str_replace("\n", ' ', $result->answer), 0, 110),
                 ));
+                $log->event('run', [
+                    'model' => $model->value,
+                    'question_id' => $question['id'],
+                    'category' => $question['category'],
+                    'total_ms' => $result->timings->totalMs(),
+                    'generation_ms' => $result->timings->generationMs,
+                    'answer_preview' => mb_substr($result->answer, 0, 160),
+                ]);
+
+                ++$this->stats['runs'];
+                $this->stats[$model->value] = ($this->stats[$model->value] ?? 0) + 1;
             }
         }
 
