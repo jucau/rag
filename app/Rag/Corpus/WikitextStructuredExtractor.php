@@ -83,9 +83,11 @@ final readonly class WikitextStructuredExtractor
             if ($key === '') {
                 continue;
             }
+
             if ($value === '') {
                 continue;
             }
+
             if ($this->isSkippedKey($key)) {
                 continue;
             }
@@ -139,9 +141,11 @@ final readonly class WikitextStructuredExtractor
             if ($line === '') {
                 continue;
             }
+
             if (str_starts_with($line, '{|')) {
                 continue;
             }
+
             if ($line === '|}') {
                 continue;
             }

@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace App\Rag\Corpus;
 
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Sleep;
+use Throwable;
 
 /**
  * Minimal MediaWiki API client: fetches plain-text article content
@@ -159,9 +163,19 @@ final readonly class WikipediaClient
 
     private function request(): PendingRequest
     {
+        // Wikimedia etiquette: identify the client, pace the calls
+        // (each article costs two requests since ADR-0015), and back off
+        // on 429 rather than failing a long ingestion run.
+        Sleep::usleep(250_000);
+
         return Http::baseUrl($this->apiUrl)
             ->timeout(30)
-            // Wikimedia etiquette: identify the client.
-            ->withUserAgent('rag-pedagogical-project/0.1 (Laravel; educational use)');
+            ->withUserAgent('rag-pedagogical-project/0.1 (Laravel; educational use)')
+            ->retry(
+                times: 5,
+                sleepMilliseconds: fn (int $attempt): int => $attempt * 5_000,
+                when: fn (Throwable $exception): bool => $exception instanceof ConnectionException
+                    || ($exception instanceof RequestException && $exception->response->status() === 429),
+            );
     }
 }
