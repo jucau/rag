@@ -22,6 +22,7 @@ final readonly class ChatProviderFactory
             'ollama' => new OllamaChatProvider(
                 baseUrl: config()->string('rag.embeddings.ollama.url'),
                 model: config()->string('rag.chat.ollama.model'),
+                think: $this->thinkOption(),
             ),
             'claude' => new ClaudeChatProvider(
                 client: new Client(apiKey: config()->string('rag.chat.claude.api_key')),
@@ -32,5 +33,12 @@ final readonly class ChatProviderFactory
                 $name,
             )),
         };
+    }
+
+    private function thinkOption(): ?bool
+    {
+        $think = config('rag.chat.ollama.think');
+
+        return is_bool($think) ? $think : null;
     }
 }

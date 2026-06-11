@@ -42,6 +42,12 @@ return [
 
         'ollama' => [
             'model' => env('OLLAMA_CHAT_MODEL', 'gemma3:4b'),
+            // For thinking models (qwen3…): false disables the reasoning
+            // phase (faster), true forces it. Leave unset for models
+            // without thinking support — they reject the parameter.
+            'think' => env('OLLAMA_CHAT_THINK') === null
+                ? null
+                : filter_var(env('OLLAMA_CHAT_THINK'), FILTER_VALIDATE_BOOL),
         ],
 
         'claude' => [
