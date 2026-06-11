@@ -35,7 +35,7 @@ final class WikitextStructuredExtractorTest extends TestCase
         $sections = $this->extractor->extract($wikitext);
 
         $this->assertCount(1, $sections);
-        $this->assertStringStartsWith("== Fiche du club (infobox) ==\n", $sections[0]);
+        $this->assertStringStartsWith("== Fiche d'identité (infobox, données actuelles) ==\n", $sections[0]);
         $this->assertStringContainsString('Nom : Olympique lyonnais.', $sections[0]);
         $this->assertStringContainsString('Entraîneur : Paulo Fonseca.', $sections[0]);
         $this->assertStringContainsString('Stade : Groupama Stadium.', $sections[0]);
@@ -85,6 +85,28 @@ final class WikitextStructuredExtractorTest extends TestCase
 
         $this->assertStringContainsString('Club : Le Havre AC', $sections[0]);
         $this->assertStringNotContainsString('background', $sections[0]);
+    }
+
+    #[Test]
+    public function abbreviated_table_headers_are_expanded(): void
+    {
+        $wikitext = <<<'WIKI'
+            {| class="wikitable"
+            |+ Bilan par compétition
+            ! Compétition !! M !! V !! N !! D !! Bp !! Bc
+            |-
+            | Ligue des champions || 116 || 50 || 30 || 36 || 180 || 140
+            |}
+            WIKI;
+
+        $sections = $this->extractor->extract($wikitext);
+
+        // "M : 116" read as a trophy count by two benchmark models —
+        // the expansion removes the ambiguity.
+        $this->assertStringContainsString('Matchs : 116', $sections[0]);
+        $this->assertStringContainsString('Victoires : 50', $sections[0]);
+        $this->assertStringContainsString('Buts pour : 180', $sections[0]);
+        $this->assertStringNotContainsString('M : 116', $sections[0]);
     }
 
     #[Test]

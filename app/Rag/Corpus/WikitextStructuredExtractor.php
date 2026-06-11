@@ -25,6 +25,22 @@ final readonly class WikitextStructuredExtractor
     ];
 
     /**
+     * French sports tables abbreviate their headers ("M", "V", "Bp"…) —
+     * flattened to "M : 116", two benchmark models read match counts as
+     * trophy counts (the "116 Ligues des champions" hallucination,
+     * docs/04). Expanding the well-known abbreviations removes the
+     * ambiguity for the LLM.
+     */
+    private const array TABLE_HEADER_LABELS = [
+        'm' => 'Matchs', 'j' => 'Joués', 'v' => 'Victoires', 'g' => 'Gagnés',
+        'n' => 'Nuls', 'd' => 'Défaites', 'p' => 'Perdus',
+        'bp' => 'Buts pour', 'bc' => 'Buts contre',
+        'diff' => 'Différence de buts', 'dif' => 'Différence de buts',
+        'pts' => 'Points', 'clt' => 'Classement', 'sais' => 'Saisons',
+        'moy' => 'Moyenne de buts',
+    ];
+
+    /**
      * Returns "== Heading ==\ncontent" blocks, ready to be appended to
      * the article's plain-text extract.
      *
@@ -37,7 +53,7 @@ final readonly class WikitextStructuredExtractor
         $infobox = $this->extractInfobox($wikitext);
 
         if ($infobox !== null) {
-            $sections[] = "== Fiche du club (infobox) ==\n" . $infobox;
+            $sections[] = "== Fiche d'identité (infobox, données actuelles) ==\n" . $infobox;
         }
 
         foreach ($this->extractTables($wikitext) as $index => [$caption, $content]) {
@@ -209,11 +225,22 @@ final readonly class WikitextStructuredExtractor
                 continue;
             }
 
-            $header = $headers[$index] ?? null;
+            $header = $this->expandHeader($headers[$index] ?? null);
             $cells[] = $header === null || $header === '' ? $value : sprintf('%s : %s', $header, $value);
         }
 
         return implode(' — ', $cells);
+    }
+
+    private function expandHeader(?string $header): ?string
+    {
+        if ($header === null) {
+            return null;
+        }
+
+        $normalized = mb_strtolower(trim($header, " ."));
+
+        return self::TABLE_HEADER_LABELS[$normalized] ?? $header;
     }
 
     /**

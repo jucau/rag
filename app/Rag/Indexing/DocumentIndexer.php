@@ -21,10 +21,15 @@ final readonly class DocumentIndexer
      * + prompt-visible chunk format). BUMP THIS whenever any of them
      * changes: rag:index then knows every document is stale.
      *
-     * History: 2026-06-11.1 = section-aware contextual chunking
-     * (ADR-0013) + wikitext structured sections (ADR-0015).
+     * History:
+     * - 2026-06-11.1 = section-aware contextual chunking (ADR-0013)
+     *   + wikitext structured sections (ADR-0015).
+     * - 2026-06-12.1 = table header abbreviations expanded ("M : 116" →
+     *   "Matchs : 116") and infobox heading marked as current facts —
+     *   fixes the "116 Ligues des champions" misread found by the
+     *   benchmark (docs/04).
      */
-    public const string VERSION = '2026-06-11.1';
+    public const string VERSION = '2026-06-12.1';
 
     /**
      * How many chunks are embedded per Ollama call.
