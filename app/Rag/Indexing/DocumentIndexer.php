@@ -44,14 +44,16 @@ final readonly class DocumentIndexer
     }
 
     /**
-     * Rebuilds the document's chunks from its stored raw content.
-     * Returns the number of chunks created.
+     * Rebuilds the document's chunks from its stored raw content,
+     * timing the cheap phase (chunking) and the expensive one
+     * (embedding) separately.
      */
-    public function index(Document $document): int
+    public function index(Document $document): IndexResult
     {
         // The prose comes from the stored plain-text extract; infobox
         // and tables are linearised from the stored wikitext — the whole
         // transformation is local, no network involved.
+        $started = hrtime(true);
         $content = $document->content;
 
         if ($document->wikitext !== null) {
@@ -62,11 +64,14 @@ final readonly class DocumentIndexer
             }
         }
 
+        $chunks = $this->chunker->chunk($document->title, $content);
+        $chunkingMs = $this->elapsedMs($started);
+
         // Chunks are rebuilt from scratch: stale vectors must not
         // survive a content or strategy update.
         $document->chunks()->delete();
 
-        $chunks = $this->chunker->chunk($document->title, $content);
+        $started = hrtime(true);
         $index = 0;
 
         foreach (array_chunk($chunks, self::EMBEDDING_BATCH_SIZE) as $batch) {
@@ -83,12 +88,23 @@ final readonly class DocumentIndexer
             }
         }
 
+        $embeddingMs = $this->elapsedMs($started);
+
         $document->update([
             'chunked_at' => now(),
             'chunked_content_hash' => $document->content_hash,
             'chunking_version' => self::VERSION,
         ]);
 
-        return count($chunks);
+        return new IndexResult(
+            chunks: count($chunks),
+            chunkingMs: $chunkingMs,
+            embeddingMs: $embeddingMs,
+        );
+    }
+
+    private function elapsedMs(int|float $startedNs): int
+    {
+        return (int) round((hrtime(true) - $startedNs) / 1_000_000);
     }
 }

@@ -28,7 +28,7 @@ class IndexDocuments extends Command
     /**
      * @var array<string, int>
      */
-    private array $stats = ['indexed' => 0, 'fresh' => 0, 'chunks' => 0];
+    private array $stats = ['indexed' => 0, 'fresh' => 0, 'chunks' => 0, 'chunking_ms' => 0, 'embedding_ms' => 0];
 
     public function handle(DocumentIndexer $indexer): int
     {
@@ -80,35 +80,45 @@ class IndexDocuments extends Command
             }
 
             $previous = $document->chunks()->count();
-            $count = $indexer->index($document);
+            $result = $indexer->index($document);
 
             $this->line(sprintf(
-                '✔ %s — %d chunk(s)%s — %s',
+                '✔ %s — %d chunk(s)%s — %s — %.1fs (embedding %.1fs)',
                 $document->title,
-                $count,
+                $result->chunks,
                 $previous > 0 ? sprintf(' (was %d)', $previous) : '',
                 $reason,
+                $result->totalMs() / 1000,
+                $result->embeddingMs / 1000,
             ));
             $log->event('indexed', [
                 'title' => $document->title,
                 'reason' => $reason,
-                'chunks' => $count,
+                'chunks' => $result->chunks,
                 'previous_chunks' => $previous,
+                'chunking_ms' => $result->chunkingMs,
+                'embedding_ms' => $result->embeddingMs,
+                'duration_ms' => $result->totalMs(),
             ]);
 
             ++$this->stats['indexed'];
-            $this->stats['chunks'] += $count;
+            $this->stats['chunks'] += $result->chunks;
+            $this->stats['chunking_ms'] += $result->chunkingMs;
+            $this->stats['embedding_ms'] += $result->embeddingMs;
         }
 
         $elapsed = (int) round((hrtime(true) - $startedAt) / 1_000_000_000);
 
         $this->newLine();
         $this->info(sprintf(
-            'Done in %dm%02ds — %d document(s) re-indexed (%d chunks), %d already fresh.',
+            'Done in %dm%02ds — %d document(s) re-indexed (%d chunks, embedding %dm%02ds, ~%dms/chunk), %d already fresh.',
             intdiv($elapsed, 60),
             $elapsed % 60,
             $this->stats['indexed'],
             $this->stats['chunks'],
+            intdiv((int) round($this->stats['embedding_ms'] / 1000), 60),
+            ((int) round($this->stats['embedding_ms'] / 1000)) % 60,
+            $this->stats['chunks'] > 0 ? (int) round($this->stats['embedding_ms'] / $this->stats['chunks']) : 0,
             $this->stats['fresh'],
         ));
 
