@@ -95,12 +95,41 @@ final readonly class WikipediaClient
     }
 
     /**
-     * Raw wikitext of an article — the source the structured-data
-     * extractor parses (prop=extracts strips tables and infoboxes).
+     * Lightweight change detection (ADR-0020): the latest revision id of
+     * an article, without downloading its content.
      */
-    public function fetchWikitext(string $title): ?string
+    public function latestRevisionId(string $title): ?int
     {
-        /** @var array{query?: array{pages?: array<int|string, array{revisions?: list<array{slots?: array{main?: array{content?: string}}}>}>}} $data */
+        /** @var array{query?: array{pages?: array<int|string, array{revisions?: list<array{revid?: int}>}>}} $data */
+        $data = $this->request()->get('', [
+            'action' => 'query',
+            'format' => 'json',
+            'formatversion' => '2',
+            'prop' => 'revisions',
+            'rvprop' => 'ids',
+            'redirects' => '1',
+            'titles' => $title,
+        ])->throw()->json();
+
+        foreach ($data['query']['pages'] ?? [] as $page) {
+            $revisionId = $page['revisions'][0]['revid'] ?? null;
+
+            if ($revisionId !== null) {
+                return $revisionId;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Raw wikitext of an article with its revision id — the source the
+     * structured-data extractor parses (prop=extracts strips tables and
+     * infoboxes).
+     */
+    public function fetchRevision(string $title): ?WikipediaRevision
+    {
+        /** @var array{query?: array{pages?: array<int|string, array{revisions?: list<array{revid?: int, slots?: array{main?: array{content?: string}}}>}>}} $data */
         $data = $this->request()->get('', [
             'action' => 'query',
             'format' => 'json',
@@ -108,17 +137,19 @@ final readonly class WikipediaClient
             // (version 1 uses the awkward "*" key).
             'formatversion' => '2',
             'prop' => 'revisions',
-            'rvprop' => 'content',
+            'rvprop' => 'ids|content',
             'rvslots' => 'main',
             'redirects' => '1',
             'titles' => $title,
         ])->throw()->json();
 
         foreach ($data['query']['pages'] ?? [] as $page) {
-            $content = $page['revisions'][0]['slots']['main']['content'] ?? '';
+            $revision = $page['revisions'][0] ?? [];
+            $content = $revision['slots']['main']['content'] ?? '';
+            $revisionId = $revision['revid'] ?? null;
 
-            if ($content !== '') {
-                return $content;
+            if ($content !== '' && $revisionId !== null) {
+                return new WikipediaRevision(revisionId: $revisionId, wikitext: $content);
             }
         }
 

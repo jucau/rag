@@ -71,7 +71,14 @@ tinker:
 composer-install:
 	@$(EXEC) composer install
 
+index:
+	@$(ARTISAN) rag:index
+
+fetch-all:
+	@$(ARTISAN) rag:fetch-wikipedia --all
+
 ollama-pull:
+	@$(DC) exec ollama ollama pull llama3.2:3b
 	@$(DC) exec ollama ollama pull gemma3:4b
 	@$(DC) exec ollama ollama pull embeddinggemma
 

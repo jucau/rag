@@ -226,18 +226,32 @@ chunks + answer is exactly what RAG evaluation frameworks consume.
 | Query log | `app/Models/RagQuery.php` ([ADR-0011](adr/0011-log-rag-queries-with-timings.md)) |
 | RAG configuration | `config/rag.php` |
 
-### Running an ingestion
+### Running an ingestion (two stages, ADR-0020)
+
+Ingestion is split into its network half and its compute half:
 
 ```bash
-docker compose exec app php artisan rag:ingest-wikipedia \
+# 1. Extract — scrape Wikipedia, store raw materials (extract, wikitext,
+#    revision id, content hash). Incremental: unchanged revisions are
+#    skipped after one light API call.
+docker compose exec app php artisan rag:fetch-wikipedia \
   --title="Championnat de France de football 2025-2026" \
-  --category="Catégorie:Club de Ligue 1"
+  --category="Catégorie:Club de Ligue 1" --depth=1 --limit=100
+docker compose exec app php artisan rag:fetch-wikipedia --all   # refresh corpus
+
+# 2. Transform & Load — linearise infobox/tables, chunk, embed. Only
+#    stale documents are processed (content hash changed, chunking
+#    strategy version changed, or never indexed). Fully local.
+docker compose exec app php artisan rag:index            # stale only
+docker compose exec app php artisan rag:index --force    # everything
 ```
 
-Ingestion is **idempotent**: a document is identified by its
-`(source, external_id)` pair, so re-running the command refreshes content
-and rebuilds chunks instead of duplicating them. Re-ingesting regularly is
-how the corpus stays *recent* — the whole point of ADR-0008.
+Both stages are idempotent (documents are identified by their
+`(source, external_id)` pair) and observable (per-article reasons,
+final summary). The split means a chunking-strategy change, a
+linearisation fix or an embedding-model swap is a local `rag:index
+--force` — no re-scraping. Bump `DocumentIndexer::VERSION` whenever the
+strategy changes: staleness detection picks it up automatically.
 
 **The output is deliberately observable** (a lesson learned twice on
 2026-06-11: a rate-limit crash mid-run, then a silent `formatversion`
