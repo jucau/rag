@@ -1,58 +1,85 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# ⚽ RAG Football — a pedagogical RAG built with Laravel
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A complete **Retrieval-Augmented Generation** system, built from scratch
+to understand every moving part: ask questions about French football
+(Ligue 1, clubs, players) and get answers **grounded in Wikipedia
+articles**, with sources — something a bare LLM cannot do.
 
-## About Laravel
+Everything runs locally in Docker: PostgreSQL + pgvector as the vector
+store, Ollama for embeddings and generation (Claude available as an
+alternative), Laravel 13 + Inertia/React for the chat UI.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+> 📚 **This project is documentation-first.** The concepts (chunking,
+> embeddings, retrieval, grounding…), every architecture decision (21
+> ADRs) and the quality/benchmark reports live in [docs/](docs/README.md).
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Quickstart
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+The only prerequisite is **Docker** — no PHP, composer or node on the
+host.
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+git clone <repo> rag && cd rag
+cp .env.example .env
+make setup          # stack + composer + Ollama models (~4GB) + migrations + front build
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Then ingest some content and ask away:
 
-## Contributing
+```bash
+# 1. Fetch articles from Wikipedia (raw content, incremental)
+docker compose exec app php artisan rag:fetch-wikipedia \
+  --title="Olympique lyonnais" --category="Catégorie:Club de Ligue 1"
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+# 2. Chunk + embed whatever is stale
+make index
 
-## Code of Conduct
+# 3. Ask — CLI…
+docker compose exec app php artisan rag:ask "Qui est l'entraîneur de l'OM ?"
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# …or chat UI with streaming + model selector
+open http://localhost:8000
+```
 
-## Security Vulnerabilities
+## Useful commands
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+| Command | What it does |
+|---|---|
+| `make start` / `make stop` | Boot / stop the stack |
+| `make setup` | Full bootstrap from a fresh clone |
+| `make fetch-all` | Refresh the corpus (unchanged pages are skipped) |
+| `make index` | Chunk + embed stale documents only |
+| `make quality` | Rector + Pint + PHPStan (level max) |
+| `make testing` | Test suite |
+| `make shell` | Shell inside the app container |
+| `php artisan rag:ask "…" --provider=claude --model=…` | Query with a specific provider/model |
+| `php artisan rag:benchmark` | Run the 50-question benchmark across local models |
 
-## License
+Batch runs export structured JSON logs to `storage/rag-runs/`; every
+question is logged with timings and sources in the `rag_queries` table.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Services
+
+| Service | Image | Port |
+|---|---|---|
+| nginx | `nginx:1.28-alpine` | 8000 |
+| app | PHP-FPM 8.5 (Alpine) | 9000 (internal) |
+| db | `pgvector/pgvector:0.8.2-pg17` | 5432 |
+| ollama | `ollama/ollama:0.30.7` | 11434 |
+| node | `node:22-alpine` (Vite dev server) | 5173 |
+
+## Going further
+
+- [Project overview](docs/01-project-overview.md) — why RAG, the architecture, the hybrid local/API pattern
+- [The RAG pipeline](docs/02-rag-pipeline.md) — ingestion, chunking, retrieval, generation, performance
+- [Answer quality](docs/03-answer-quality.md) & [model benchmark](docs/04-benchmark-local-models.md)
+- [ADRs](docs/adr/README.md) — every decision with its context and trade-offs
+- [Glossary](docs/glossary.md)
+
+Conventions for contributors (and AI agents): [LLM.md](LLM.md).
+
+## License & data
+
+Code under MIT. The corpus is fetched from [Wikipedia](https://fr.wikipedia.org)
+(CC BY-SA): every stored document keeps its source URL, and answers cite
+their sources.
