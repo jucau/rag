@@ -24,6 +24,12 @@ services:
   ollama:
     # Local inference server: serves the embedding model over a simple REST API
     image: ollama/ollama:0.30.7
+    environment:
+      # Each query uses two models (embeddings + chat): pin both in
+      # memory, otherwise reloads cause 30-100s latency outliers
+      # (ADR-0016). Needs ~4.5GB RAM in the Docker VM.
+      OLLAMA_KEEP_ALIVE: -1
+      OLLAMA_MAX_LOADED_MODELS: 2
     ports:
       - "11434:11434"
     volumes:

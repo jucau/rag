@@ -62,6 +62,33 @@ fabrication) is the failure mode attributed to model size in the
 taxonomy above — the designated test is re-asking with
 `--provider=claude` once an API key is available.
 
+## Local model benchmark (2026-06-11)
+
+Generation on CPU felt slow (gemma3:4b). Four models compared on the
+same 5 questions over the enriched corpus (141 docs / 4,966 chunks,
+infoboxes included), all runs logged in `rag_queries`, warm models:
+
+| Model | Size | Median gen. | Quality (of 5) | Notes |
+|---|---|---|---|---|
+| gemma3:4b (default) | 3.3GB | 12.4s | **4** | Only model to read the OM coach from the **infobox** (killer demo ✓); still fabricates a "nickname" |
+| llama3.2:3b | 2.0GB | 9.9s | **4** | The only model to **pass the fabrication trap** ("aucun détail sur le surnom") — but botched the infobox question (answered 2023 history) |
+| qwen3:1.7b (think off) | 1.4GB | 8.9s | 2.5 | Confident fabrications: invented nickname "Le Maréchal", added Ligue 2 titles to the OL count |
+| gemma3:1b | 815MB | 5.1s | 2 | Fast but unusable: answered cup titles when asked about championships, vague hallucinated prose |
+
+**Decision ([ADR-0016](adr/0016-keep-gemma3-4b-after-benchmark.md)):
+keep gemma3:4b.** The 2.5s saved by llama3.2:3b don't pay for losing
+the infobox-grounded current-facts answers, and smaller models trade
+speed for confident fabrication — the worst failure mode for a RAG.
+The actual latency levers are elsewhere: models pinned in memory
+(`OLLAMA_KEEP_ALIVE=-1` — the 30-100s outliers were model reloads),
+`RAG_TOP_K` to shrink prompt processing, and answer streaming for
+perceived latency.
+
+Side note: the same benchmark finally validated the **killer demo** —
+*"Qui est l'entraîneur actuel de l'OM ?"* → *"Habib Beye (selon la
+fiche infobox)"* — the structured-data extraction of ADR-0015 closed
+the gap observed on day one.
+
 ## Candidate next steps (not implemented)
 
 - Compare providers on the failed questions (`--provider=claude`) once
