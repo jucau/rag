@@ -4,6 +4,22 @@ import { useEffect, useRef, useState } from 'react';
 const csrfToken = () =>
     document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 
+// Parses one SSE block ("event: x\ndata: {…}") into { event, data }.
+const parseSseBlock = (block) => {
+    let event = 'message';
+    let data = '';
+
+    for (const line of block.split('\n')) {
+        if (line.startsWith('event:')) {
+            event = line.slice(6).trim();
+        } else if (line.startsWith('data:')) {
+            data += line.slice(5).trim();
+        }
+    }
+
+    return { event, data: data === '' ? null : JSON.parse(data) };
+};
+
 function TypingIndicator() {
     return (
         <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-sm bg-slate-800 px-5 py-4 w-fit">
@@ -66,7 +82,12 @@ function Message({ message }) {
     return (
         <div className="flex justify-start">
             <div className="max-w-[85%] rounded-2xl rounded-bl-sm bg-slate-800 px-4 py-3 text-slate-100">
-                <p className="whitespace-pre-wrap">{message.content}</p>
+                <p className="whitespace-pre-wrap">
+                    {message.content}
+                    {message.streaming && (
+                        <span className="ml-0.5 animate-pulse text-emerald-400">▍</span>
+                    )}
+                </p>
                 {message.sources?.length > 0 && <Sources sources={message.sources} />}
                 {message.meta && (
                     <p className="mt-2 text-[11px] text-slate-500">{message.meta}</p>
@@ -100,12 +121,12 @@ export default function Chat({ models }) {
         setLoading(true);
 
         try {
-            const response = await fetch('/ask', {
+            const response = await fetch('/ask-stream', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': csrfToken(),
-                    Accept: 'application/json',
+                    Accept: 'text/event-stream',
                 },
                 body: JSON.stringify({
                     question: trimmed,
@@ -118,17 +139,58 @@ export default function Chat({ models }) {
                 throw new Error(`HTTP ${response.status}`);
             }
 
-            const data = await response.json();
+            // Consume the SSE stream: grow the assistant bubble with each
+            // delta — perceived latency becomes "time to first token".
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+            let started = false;
+            let pendingSources = [];
 
-            setMessages((current) => [
-                ...current,
-                {
-                    role: 'assistant',
-                    content: data.answer,
-                    sources: data.sources,
-                    meta: `${data.provider} — ${(data.timings.total_ms / 1000).toFixed(1)}s`,
-                },
-            ]);
+            const updateLast = (patch) =>
+                setMessages((current) => {
+                    const next = [...current];
+                    next[next.length - 1] = { ...next[next.length - 1], ...patch(next[next.length - 1]) };
+                    return next;
+                });
+
+            const handleEvent = ({ event, data }) => {
+                if (event === 'delta') {
+                    if (!started) {
+                        started = true;
+                        setLoading(false);
+                        setMessages((current) => [
+                            ...current,
+                            { role: 'assistant', content: '', streaming: true },
+                        ]);
+                    }
+                    updateLast((last) => ({ content: last.content + data.text }));
+                } else if (event === 'sources') {
+                    pendingSources = data.sources;
+                } else if (event === 'done') {
+                    updateLast(() => ({
+                        streaming: false,
+                        sources: pendingSources,
+                        meta: `${data.provider} — ${(data.timings.total_ms / 1000).toFixed(1)}s`,
+                    }));
+                }
+            };
+
+            for (;;) {
+                const { done, value } = await reader.read();
+                if (done) {
+                    break;
+                }
+
+                buffer += decoder.decode(value, { stream: true });
+
+                let separator;
+                while ((separator = buffer.indexOf('\n\n')) !== -1) {
+                    const block = buffer.slice(0, separator);
+                    buffer = buffer.slice(separator + 2);
+                    handleEvent(parseSseBlock(block));
+                }
+            }
         } catch {
             setMessages((current) => [
                 ...current,

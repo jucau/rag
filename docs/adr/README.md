@@ -27,3 +27,4 @@ the time the choice is made.
 | [0014](0014-retrieval-relevance-threshold.md) | Retrieval relevance threshold and hardened grounding prompt | Accepted |
 | [0015](0015-structured-data-from-wikitext.md) | Recover structured data (infobox, tables) from wikitext | Accepted |
 | [0016](0016-keep-gemma3-4b-after-benchmark.md) | Keep gemma3:4b for local generation; pin models in memory | Accepted |
+| [0017](0017-sse-streaming-answers.md) | Stream answers over SSE | Accepted |

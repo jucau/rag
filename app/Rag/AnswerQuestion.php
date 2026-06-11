@@ -8,6 +8,7 @@ use App\Models\DocumentChunk;
 use App\Models\RagQuery;
 use App\Rag\Chat\ChatProvider;
 use App\Rag\Embeddings\EmbeddingProvider;
+use Generator;
 use Illuminate\Support\Collection;
 use Pgvector\Laravel\Distance;
 use Pgvector\Laravel\Vector;
@@ -20,11 +21,14 @@ use Pgvector\Laravel\Vector;
  * Each phase is timed and every query is logged to rag_queries
  * (ADR-0011). Retrieval is guarded by a relevance threshold
  * (ADR-0014): off-corpus questions are answered without calling the
- * generation model at all.
+ * generation model at all. askStream() delivers the same pipeline as
+ * SSE-ready events (ADR-0017).
  */
 final readonly class AnswerQuestion
 {
     public const string OUT_OF_CORPUS_ANSWER = "Cette question semble hors du corpus : aucun passage suffisamment proche n'a été trouvé. Essayez une question sur le football français (Ligue 1, clubs, joueurs…).";
+
+    private const string GUARD_PROVIDER = 'guard (out-of-corpus)';
 
     private const string SYSTEM_PROMPT = <<<'PROMPT'
         You are a question-answering assistant working over a French
@@ -55,66 +59,119 @@ final readonly class AnswerQuestion
 
     public function ask(string $question): RagAnswer
     {
-        // 1. Embed the question — with the same model as ingestion.
+        [$chunks, $embeddingMs, $retrievalMs] = $this->retrieve($question);
+
+        $started = hrtime(true);
+
+        if ($chunks->isEmpty()) {
+            $answer = self::OUT_OF_CORPUS_ANSWER;
+            $provider = self::GUARD_PROVIDER;
+        } else {
+            $answer = $this->chat->chat(self::SYSTEM_PROMPT, $this->buildUserPrompt($question, $chunks));
+            $provider = $this->chat->describe();
+        }
+
+        $timings = new RagTimings($embeddingMs, $retrievalMs, $this->elapsedMs($started));
+        $ragAnswer = new RagAnswer($answer, $chunks, $provider, $timings);
+
+        $this->log($question, $ragAnswer);
+
+        return $ragAnswer;
+    }
+
+    /**
+     * The same pipeline, streamed (ADR-0017): a Sources event right
+     * after retrieval, one Delta per generated fragment, then Done with
+     * provider and timings. The query is logged once fully generated.
+     *
+     * @return Generator<int, RagStreamEvent>
+     */
+    public function askStream(string $question): Generator
+    {
+        [$chunks, $embeddingMs, $retrievalMs] = $this->retrieve($question);
+
+        yield new RagStreamEvent(RagStreamEventType::Sources, [
+            'sources' => RagAnswer::sourcesFromChunks($chunks),
+        ]);
+
+        $started = hrtime(true);
+
+        if ($chunks->isEmpty()) {
+            $answer = self::OUT_OF_CORPUS_ANSWER;
+            $provider = self::GUARD_PROVIDER;
+
+            yield new RagStreamEvent(RagStreamEventType::Delta, ['text' => $answer]);
+        } else {
+            $answer = '';
+            $provider = $this->chat->describe();
+            $stream = $this->chat->chatStream(self::SYSTEM_PROMPT, $this->buildUserPrompt($question, $chunks));
+
+            foreach ($stream as $delta) {
+                $answer .= $delta;
+
+                yield new RagStreamEvent(RagStreamEventType::Delta, ['text' => $delta]);
+            }
+        }
+
+        $timings = new RagTimings($embeddingMs, $retrievalMs, $this->elapsedMs($started));
+        $ragAnswer = new RagAnswer(trim($answer), $chunks, $provider, $timings);
+
+        $this->log($question, $ragAnswer);
+
+        yield new RagStreamEvent(RagStreamEventType::Done, [
+            'provider' => $provider,
+            'timings' => [
+                'embedding_ms' => $timings->embeddingMs,
+                'retrieval_ms' => $timings->retrievalMs,
+                'generation_ms' => $timings->generationMs,
+                'total_ms' => $timings->totalMs(),
+            ],
+        ]);
+    }
+
+    /**
+     * Embed the question (same model as ingestion), then retrieve the
+     * top-k chunks by cosine distance (pgvector <=>), keeping only those
+     * close enough to be meaningful (ADR-0014).
+     *
+     * @return array{0: Collection<int, DocumentChunk>, 1: int, 2: int}
+     */
+    private function retrieve(string $question): array
+    {
         $started = hrtime(true);
         $vector = new Vector($this->embeddings->embed($question));
         $embeddingMs = $this->elapsedMs($started);
 
-        // 2. Retrieve the top-k chunks by cosine distance (pgvector <=>),
-        //    keeping only those close enough to be meaningful (ADR-0014).
         $started = hrtime(true);
         $chunks = DocumentChunk::query()
             ->nearestNeighbors('embedding', $vector, Distance::Cosine)
             ->with('document')
             ->take($this->topK)
             ->get()
-            ->filter(fn (DocumentChunk $chunk): bool => $this->distanceOf($chunk) <= $this->maxDistance)
+            ->filter(fn (DocumentChunk $chunk): bool => $chunk->neighbor_distance <= $this->maxDistance)
             ->values();
         $retrievalMs = $this->elapsedMs($started);
 
-        // 3. Generate, grounded in the retrieved context. If nothing
-        //    relevant was retrieved, don't call the model at all: it
-        //    could only hallucinate from off-topic passages.
-        $started = hrtime(true);
+        return [$chunks, $embeddingMs, $retrievalMs];
+    }
 
-        if ($chunks->isEmpty()) {
-            $answer = self::OUT_OF_CORPUS_ANSWER;
-            $provider = 'guard (out-of-corpus)';
-        } else {
-            $answer = $this->chat->chat(self::SYSTEM_PROMPT, $this->buildUserPrompt($question, $chunks));
-            $provider = $this->chat->describe();
-        }
-
-        $generationMs = $this->elapsedMs($started);
-
-        $timings = new RagTimings($embeddingMs, $retrievalMs, $generationMs);
-        $ragAnswer = new RagAnswer($answer, $chunks, $provider, $timings);
-
+    private function log(string $question, RagAnswer $answer): void
+    {
         RagQuery::query()->create([
             'question' => $question,
-            'answer' => $answer,
-            'provider' => $ragAnswer->provider,
-            'sources' => $ragAnswer->sources(),
-            'embedding_ms' => $timings->embeddingMs,
-            'retrieval_ms' => $timings->retrievalMs,
-            'generation_ms' => $timings->generationMs,
-            'total_ms' => $timings->totalMs(),
+            'answer' => $answer->answer,
+            'provider' => $answer->provider,
+            'sources' => $answer->sources(),
+            'embedding_ms' => $answer->timings->embeddingMs,
+            'retrieval_ms' => $answer->timings->retrievalMs,
+            'generation_ms' => $answer->timings->generationMs,
+            'total_ms' => $answer->timings->totalMs(),
         ]);
-
-        return $ragAnswer;
     }
 
     private function elapsedMs(int|float $startedNs): int
     {
         return (int) round((hrtime(true) - $startedNs) / 1_000_000);
-    }
-
-    /**
-     * Cosine distance computed by the nearestNeighbors scope.
-     */
-    private function distanceOf(DocumentChunk $chunk): float
-    {
-        return $chunk->neighbor_distance;
     }
 
     /**

@@ -29,7 +29,16 @@ final readonly class RagAnswer
      */
     public function sources(): array
     {
-        return array_values($this->chunks
+        return self::sourcesFromChunks($this->chunks);
+    }
+
+    /**
+     * @param Collection<int, DocumentChunk> $chunks
+     * @return list<array{chunk_id: int, title: string, url: string, distance: float}>
+     */
+    public static function sourcesFromChunks(Collection $chunks): array
+    {
+        return array_values($chunks
             ->map(fn (DocumentChunk $chunk): array => [
                 'chunk_id' => $chunk->id,
                 'title' => $chunk->document->title,

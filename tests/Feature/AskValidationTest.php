@@ -35,6 +35,18 @@ final class AskValidationTest extends TestCase
     }
 
     #[Test]
+    public function the_streaming_endpoint_shares_the_same_whitelists(): void
+    {
+        $response = $this->postJson('/ask-stream', [
+            'question' => 'Une question ?',
+            'model' => 'mistral:7b',
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['model']);
+    }
+
+    #[Test]
     public function it_rejects_an_empty_question(): void
     {
         $response = $this->postJson('/ask', ['question' => '']);

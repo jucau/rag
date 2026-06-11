@@ -5,6 +5,10 @@ services:
       - "8000:8000"
     volumes:
       - .:/var/www/html
+    environment:
+      # artisan serve is single-worker by default: while an SSE answer
+      # streams (~10s), no other request would be served (ADR-0017).
+      PHP_CLI_SERVER_WORKERS: 4
     depends_on:
       db:
         condition: service_healthy

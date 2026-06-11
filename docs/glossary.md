@@ -97,6 +97,12 @@ store, then have an LLM generate an answer grounded in those passages.
 **Retrieval** — The query-time step that finds the top-k chunks closest
 to the question's embedding.
 
+**SSE (Server-Sent Events)** — A simple HTTP streaming format
+(`text/event-stream`): the server pushes named events over a kept-open
+connection. Used to stream the answer token by token to the chat UI —
+perceived latency becomes "time to first token" instead of "full
+generation time" (ADR-0017).
+
 **Semantic search** — Searching by *meaning* (via embeddings and vector
 distance) rather than by keywords. Finds "I lost my credentials" when you
 ask about "password reset".

@@ -109,7 +109,10 @@ docker compose exec app php artisan rag:ask "..." --provider=claude     # compar
 docker compose exec app php artisan rag:ask "..." --model=llama3.2:3b   # compare local models
 ```
 
-The chat UI exposes the same selection. Providers and local models are
+The chat UI exposes the same selection, and streams answers over
+SSE (`POST /ask-stream`, ADR-0017): sources arrive right after
+retrieval, then the answer token by token — generation time is
+unchanged but the wait feels like ~1s. Providers and local models are
 **PHP enums** (`ChatProviderName`, `OllamaModel`) acting as whitelists:
 requests are validated against them, so a client can never ask Ollama
 for an arbitrary model. The `OllamaModel` enum also carries per-model
