@@ -228,7 +228,7 @@ Ingestion is **idempotent**: a document is identified by its
 and rebuilds chunks instead of duplicating them. Re-ingesting regularly is
 how the corpus stays *recent* — the whole point of ADR-0008.
 
-### Known limitation: Wikipedia extracts strip tables
+### Resolved limitation: Wikipedia extracts strip tables (fixed by ADR-0015)
 
 `prop=extracts` returns clean plain text but **drops wiki tables** — and
 on Wikipedia, the most "factual" data (standings, results grids, squad
@@ -238,8 +238,14 @@ section… whose table content is missing from the extract.
 
 Lesson: **what you extract bounds what your RAG can answer** — the
 extraction format matters as much as chunking or the embedding model.
-Possible future improvements: parse the wikitext tables, or complement
-the corpus with openfootball results (public domain, plain text).
+
+**Resolved on 2026-06-11** ([ADR-0015](adr/0015-structured-data-from-wikitext.md)):
+the raw wikitext is now fetched alongside the extract, and its infobox
+and tables are linearised into `== … ==` sections ("Entraîneur : …",
+"Rang : 1 — Club : … — Points : …") that the section-aware chunker
+indexes like any prose. Category harvesting also went further: the
+ingestion command walks subcategory trees (`--category` + `--depth`),
+with a `--limit` safety cap and a politeness delay between articles.
 
 The application depends on the `EmbeddingProvider` *contract*, never on the
 Ollama class directly — the concrete provider is bound in

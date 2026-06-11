@@ -20,12 +20,19 @@ final readonly class WikipediaClient
 
     /**
      * Page titles belonging to a category (e.g. "Catégorie:…"), following
-     * API pagination.
+     * API pagination. With $depth > 0, subcategories are walked
+     * recursively (visited categories are tracked to survive cycles).
      *
+     * @param array<string, true> $visited
      * @return list<string>
      */
-    public function categoryMembers(string $category): array
+    public function categoryMembers(string $category, int $depth = 0, array &$visited = []): array
     {
+        if (isset($visited[$category])) {
+            return [];
+        }
+
+        $visited[$category] = true;
         $titles = [];
         $continue = null;
 
@@ -53,7 +60,62 @@ final readonly class WikipediaClient
             $continue = $data['continue']['cmcontinue'] ?? null;
         } while ($continue !== null);
 
+        if ($depth > 0) {
+            foreach ($this->subcategories($category) as $subcategory) {
+                $titles = array_merge($titles, $this->categoryMembers($subcategory, $depth - 1, $visited));
+            }
+        }
+
         return $titles;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function subcategories(string $category): array
+    {
+        /** @var array{query?: array{categorymembers?: list<array{title: string}>}} $data */
+        $data = $this->request()->get('', [
+            'action' => 'query',
+            'format' => 'json',
+            'list' => 'categorymembers',
+            'cmtitle' => $category,
+            'cmtype' => 'subcat',
+            'cmlimit' => '500',
+        ])->throw()->json();
+
+        return array_map(
+            fn (array $member): string => $member['title'],
+            $data['query']['categorymembers'] ?? [],
+        );
+    }
+
+    /**
+     * Raw wikitext of an article — the source the structured-data
+     * extractor parses (prop=extracts strips tables and infoboxes).
+     */
+    public function fetchWikitext(string $title): ?string
+    {
+        /** @var array{query?: array{pages?: array<int|string, array{revisions?: list<array{slots?: array{main?: array{content?: string}}}>}>}} $data */
+        $data = $this->request()->get('', [
+            'action' => 'query',
+            'format' => 'json',
+            'prop' => 'revisions',
+            'rvprop' => 'content',
+            'rvslots' => 'main',
+            'redirects' => '1',
+            'titles' => $title,
+        ])->throw()->json();
+
+        foreach ($data['query']['pages'] ?? [] as $page) {
+            $content = $page['revisions'][0]['slots']['main']['content'] ?? '';
+
+            if ($content !== '') {
+                return $content;
+            }
+        }
+
+        return null;
     }
 
     /**
