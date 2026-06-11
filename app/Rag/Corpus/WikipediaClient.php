@@ -198,16 +198,28 @@ final readonly class WikipediaClient
     private function request(): PendingRequest
     {
         // Wikimedia etiquette: identify the client, pace the calls
-        // (each article costs two requests since ADR-0015), and back off
-        // on 429 rather than failing a long ingestion run.
-        Sleep::usleep(250_000);
+        // (each article costs up to three requests since ADR-0020), and
+        // back off on 429 rather than failing a long ingestion run.
+        Sleep::usleep(400_000);
 
         return Http::baseUrl($this->apiUrl)
             ->timeout(30)
             ->withUserAgent('rag-pedagogical-project/0.1 (Laravel; educational use)')
             ->retry(
-                times: 5,
-                sleepMilliseconds: fn (int $attempt): int => $attempt * 5_000,
+                times: 6,
+                sleepMilliseconds: function (int $attempt, mixed $exception): int {
+                    // Honour the server's Retry-After when provided; the
+                    // throttling window can exceed any fixed backoff.
+                    if ($exception instanceof RequestException) {
+                        $retryAfter = (int) $exception->response->header('Retry-After');
+
+                        if ($retryAfter > 0) {
+                            return ($retryAfter + 1) * 1_000;
+                        }
+                    }
+
+                    return $attempt * 15_000;
+                },
                 when: fn (Throwable $exception): bool => $exception instanceof ConnectionException
                     || ($exception instanceof RequestException && $exception->response->status() === 429),
             );
