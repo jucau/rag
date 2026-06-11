@@ -105,8 +105,16 @@ question ───────────────────────�
 
 ```bash
 docker compose exec app php artisan rag:ask "Qui est l'entraîneur de l'OM ?"
-docker compose exec app php artisan rag:ask "..." --provider=claude   # compare
+docker compose exec app php artisan rag:ask "..." --provider=claude     # compare providers
+docker compose exec app php artisan rag:ask "..." --model=llama3.2:3b   # compare local models
 ```
+
+The chat UI exposes the same selection. Providers and local models are
+**PHP enums** (`ChatProviderName`, `OllamaModel`) acting as whitelists:
+requests are validated against them, so a client can never ask Ollama
+for an arbitrary model. The `OllamaModel` enum also carries per-model
+knowledge (e.g. qwen3 needs `think: false` on CPU) and feeds the UI
+selector — single source of truth.
 
 The generation prompt is built by `app/Rag/AnswerQuestion.php`: a system
 prompt with the **grounding rules** (answer only from the context, admit

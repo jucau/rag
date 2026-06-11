@@ -5,34 +5,40 @@ declare(strict_types=1);
 namespace App\Rag\Chat;
 
 use Anthropic\Client;
-use InvalidArgumentException;
 
 /**
- * Builds a ChatProvider by name, so the configured default can be
- * overridden per call (rag:ask --provider=claude) — the whole point
- * being to compare both providers on the same retrieved context.
+ * Builds a ChatProvider, so the configured defaults can be overridden
+ * per call (rag:ask --provider/--model, the chat UI selector) — the
+ * whole point being to compare providers and models on the same
+ * retrieved context.
  */
 final readonly class ChatProviderFactory
 {
-    public function make(?string $name = null): ChatProvider
+    public function make(?ChatProviderName $provider = null, ?OllamaModel $model = null): ChatProvider
     {
-        $name ??= config()->string('rag.chat.provider');
+        $provider ??= ChatProviderName::from(config()->string('rag.chat.provider'));
 
-        return match ($name) {
-            'ollama' => new OllamaChatProvider(
-                baseUrl: config()->string('rag.embeddings.ollama.url'),
-                model: config()->string('rag.chat.ollama.model'),
-                think: $this->thinkOption(),
-            ),
-            'claude' => new ClaudeChatProvider(
+        return match ($provider) {
+            ChatProviderName::Ollama => $this->ollama($model),
+            ChatProviderName::Claude => new ClaudeChatProvider(
                 client: new Client(apiKey: config()->string('rag.chat.claude.api_key')),
                 model: config()->string('rag.chat.claude.model'),
             ),
-            default => throw new InvalidArgumentException(sprintf(
-                'Unknown chat provider "%s" (expected "ollama" or "claude").',
-                $name,
-            )),
         };
+    }
+
+    private function ollama(?OllamaModel $model): OllamaChatProvider
+    {
+        $model ??= OllamaModel::tryFrom(config()->string('rag.chat.ollama.model'))
+            ?? OllamaModel::Gemma3_4B;
+
+        return new OllamaChatProvider(
+            baseUrl: config()->string('rag.embeddings.ollama.url'),
+            model: $model->value,
+            // The enum knows its model (qwen3 must not think on CPU);
+            // the env option remains an explicit override.
+            think: $this->thinkOption() ?? $model->think(),
+        );
     }
 
     private function thinkOption(): ?bool

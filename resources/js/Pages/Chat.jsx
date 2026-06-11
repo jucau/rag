@@ -76,10 +76,10 @@ function Message({ message }) {
     );
 }
 
-export default function Chat() {
+export default function Chat({ models }) {
     const [messages, setMessages] = useState([]);
     const [question, setQuestion] = useState('');
-    const [provider, setProvider] = useState('ollama');
+    const [selectedModel, setSelectedModel] = useState(0);
     const [loading, setLoading] = useState(false);
     const bottomRef = useRef(null);
 
@@ -107,7 +107,11 @@ export default function Chat() {
                     'X-CSRF-TOKEN': csrfToken(),
                     Accept: 'application/json',
                 },
-                body: JSON.stringify({ question: trimmed, provider }),
+                body: JSON.stringify({
+                    question: trimmed,
+                    provider: models[selectedModel].provider,
+                    model: models[selectedModel].model,
+                }),
             });
 
             if (!response.ok) {
@@ -178,13 +182,16 @@ export default function Chat() {
                 <footer className="border-t border-slate-800 px-6 py-4">
                     <form onSubmit={ask} className="mx-auto flex max-w-3xl gap-2">
                         <select
-                            value={provider}
-                            onChange={(e) => setProvider(e.target.value)}
+                            value={selectedModel}
+                            onChange={(e) => setSelectedModel(Number(e.target.value))}
                             className="rounded-xl border border-slate-700 bg-slate-900 px-3 text-sm text-slate-300 focus:border-emerald-500 focus:outline-none"
-                            title="Modèle de génération"
+                            title="Modèle de génération — le premier appel à un modèle non chargé peut être plus lent"
                         >
-                            <option value="ollama">Ollama (local)</option>
-                            <option value="claude">Claude (API)</option>
+                            {models.map((entry, index) => (
+                                <option key={entry.label} value={index}>
+                                    {entry.label}
+                                </option>
+                            ))}
                         </select>
                         <input
                             type="text"

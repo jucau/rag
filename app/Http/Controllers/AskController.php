@@ -7,6 +7,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\AskRequest;
 use App\Rag\AnswerQuestion;
 use App\Rag\Chat\ChatProviderFactory;
+use App\Rag\Chat\ChatProviderName;
+use App\Rag\Chat\OllamaModel;
 use App\Rag\Embeddings\EmbeddingProvider;
 use Illuminate\Http\JsonResponse;
 
@@ -17,12 +19,12 @@ class AskController extends Controller
         EmbeddingProvider $embeddings,
         ChatProviderFactory $factory,
     ): JsonResponse {
-        /** @var string|null $provider */
-        $provider = $request->validated('provider');
-
         $service = new AnswerQuestion(
             embeddings: $embeddings,
-            chat: $factory->make($provider),
+            chat: $factory->make(
+                provider: $request->enum('provider', ChatProviderName::class),
+                model: $request->enum('model', OllamaModel::class),
+            ),
             topK: config()->integer('rag.retrieval.top_k'),
             maxDistance: config()->float('rag.retrieval.max_distance'),
         );
