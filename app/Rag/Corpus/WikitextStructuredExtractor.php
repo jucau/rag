@@ -21,7 +21,7 @@ final readonly class WikitextStructuredExtractor
 {
     private const array INFOBOX_SKIPPED_KEYS = [
         'image', 'logo', 'carte', 'blason', 'drapeau', 'upright', 'taille image',
-        'légende', 'alt', 'site web', 'pattern',
+        'légende', 'alt', 'site web', 'pattern', 'couleur', 'personnage',
     ];
 
     /**

@@ -104,6 +104,9 @@ final readonly class WikipediaClient
         $data = $this->request()->get('', [
             'action' => 'query',
             'format' => 'json',
+            // formatversion 2: revision content arrives under "content"
+            // (version 1 uses the awkward "*" key).
+            'formatversion' => '2',
             'prop' => 'revisions',
             'rvprop' => 'content',
             'rvslots' => 'main',
