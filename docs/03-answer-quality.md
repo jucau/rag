@@ -62,7 +62,12 @@ fabrication) is the failure mode attributed to model size in the
 taxonomy above — the designated test is re-asking with
 `--provider=claude` once an API key is available.
 
-## Local model benchmark (2026-06-11)
+## Local model benchmark (2026-06-11) — superseded by the 50-question run
+
+> ⚠️ **This 5-question benchmark was later invalidated**: the
+> [50-question benchmark](04-benchmark-local-models.md) (ADR-0019)
+> reversed its conclusion and made llama3.2:3b the default. Kept as a
+> lesson on small-sample evaluation.
 
 Generation on CPU felt slow (gemma3:4b). Four models compared on the
 same 5 questions over the enriched corpus (141 docs / 4,966 chunks,

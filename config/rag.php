@@ -41,7 +41,7 @@ return [
         'provider' => env('RAG_CHAT_PROVIDER', 'ollama'),
 
         'ollama' => [
-            'model' => env('OLLAMA_CHAT_MODEL', 'gemma3:4b'),
+            'model' => env('OLLAMA_CHAT_MODEL', 'llama3.2:3b'),
             // For thinking models (qwen3…): false disables the reasoning
             // phase (faster), true forces it. Leave unset for models
             // without thinking support — they reject the parameter.

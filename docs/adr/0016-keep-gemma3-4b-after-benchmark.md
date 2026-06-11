@@ -1,6 +1,6 @@
 # ADR-0016 — Keep gemma3:4b for local generation; pin models in memory
 
-**Status:** Accepted — 2026-06-11. Confirms ADR-0010 after challenge.
+**Status:** Superseded by [ADR-0019](0019-llama32-default-after-50q-benchmark.md) — the 50-question benchmark reversed the conclusion of the 5-question one. Originally accepted 2026-06-11.
 
 ## Context
 

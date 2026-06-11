@@ -30,7 +30,7 @@ final readonly class ChatProviderFactory
     private function ollama(?OllamaModel $model): OllamaChatProvider
     {
         $model ??= OllamaModel::tryFrom(config()->string('rag.chat.ollama.model'))
-            ?? OllamaModel::Gemma3_4B;
+            ?? OllamaModel::Llama32_3B;
 
         return new OllamaChatProvider(
             baseUrl: config()->string('rag.embeddings.ollama.url'),

@@ -9,8 +9,8 @@ namespace App\Rag\Chat;
  * anything outside these cases is rejected at validation time, so the
  * browser can never ask Ollama for an arbitrary model.
  *
- * Benchmark results behind each case: docs/03-answer-quality.md
- * (ADR-0016).
+ * Benchmark results behind each case: docs/04-benchmark-local-models.md
+ * (ADR-0019).
  */
 enum OllamaModel: string
 {
@@ -22,10 +22,10 @@ enum OllamaModel: string
     public function label(): string
     {
         return match ($this) {
-            self::Gemma3_4B => 'Gemma 3 4B — local (défaut)',
+            self::Gemma3_4B => 'Gemma 3 4B — local, le plus complet',
             self::Gemma3_1B => 'Gemma 3 1B — local, le plus rapide',
             self::Qwen3_1_7B => 'Qwen 3 1.7B — local',
-            self::Llama32_3B => 'Llama 3.2 3B — local',
+            self::Llama32_3B => 'Llama 3.2 3B — local (défaut, le plus fiable)',
         };
     }
 
