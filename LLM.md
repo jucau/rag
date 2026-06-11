@@ -57,7 +57,8 @@ Tests run with `make testing`. Full CI suite: `make ci`.
 
 | Service | Image | Port |
 |---|---|---|
-| app | PHP 8.5 (Alpine) + `php artisan serve` | 8000 |
-| db | `pgvector/pgvector:pg17` | 5432 |
-| ollama | `ollama/ollama` | 11434 |
+| nginx | `nginx:1.28-alpine` (HTTP entry point) | 8000 |
+| app | PHP-FPM 8.5 (Alpine) | 9000 (internal) |
+| db | `pgvector/pgvector:0.8.2-pg17` | 5432 |
+| ollama | `ollama/ollama:0.30.7` | 11434 |
 | node | `node:22-alpine` (Vite dev server) | 5173 |

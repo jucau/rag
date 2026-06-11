@@ -76,7 +76,8 @@ project ever did local *generation*, running Ollama natively on the host
 
 | Service | Image | Port | Role |
 |---|---|---|---|
-| `app` | PHP 8.5 (Alpine) | 8000 | Laravel application |
+| `nginx` | `nginx:1.28-alpine` | 8000 | HTTP entry point (static assets + FastCGI to FPM) |
+| `app` | PHP-FPM 8.5 (Alpine) | 9000 (internal) | Laravel application |
 | `db` | `pgvector/pgvector:pg17` | 5432 | Relational data + vector store |
 | `ollama` | `ollama/ollama` | 11434 | Local embedding & generation inference |
 | `node` | `node:22-alpine` | 5173 | Vite dev server (chat UI build) |

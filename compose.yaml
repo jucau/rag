@@ -1,19 +1,31 @@
 services:
   app:
+    # Pool PHP-FPM (multi-workers) : nginx lui délègue le PHP (ADR-0018)
     build: docker/php
-    ports:
-      - "8000:8000"
     volumes:
       - .:/var/www/html
-    environment:
-      # artisan serve is single-worker by default: while an SSE answer
-      # streams (~10s), no other request would be served (ADR-0017).
-      PHP_CLI_SERVER_WORKERS: 4
     depends_on:
       db:
         condition: service_healthy
       ollama:
         condition: service_healthy
+
+  nginx:
+    # Vrai serveur HTTP : statiques + multiplexage vers PHP-FPM —
+    # un SSE ouvert ne bloque plus les autres requêtes (ADR-0018)
+    image: nginx:1.28-alpine
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost/up"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   node:
     # Frontend tooling (Vite dev server with HMR) — no node on the host
