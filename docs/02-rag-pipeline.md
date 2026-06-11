@@ -228,6 +228,16 @@ Ingestion is **idempotent**: a document is identified by its
 and rebuilds chunks instead of duplicating them. Re-ingesting regularly is
 how the corpus stays *recent* — the whole point of ADR-0008.
 
+**The output is deliberately observable** (a lesson learned twice on
+2026-06-11: a rate-limit crash mid-run, then a silent `formatversion`
+bug that re-ingested everything *without* the structured data — only
+flat chunk counts gave it away). Each article line shows the chunk
+count, its previous value on a refresh, and how many structured
+sections were extracted; missing wikitext warns loudly; a final summary
+totals everything, and a run that extracted **zero** structured
+sections exits in error. In a best-effort pipeline, silence is never a
+proof of success — metrics are.
+
 ### Resolved limitation: Wikipedia extracts strip tables (fixed by ADR-0015)
 
 `prop=extracts` returns clean plain text but **drops wiki tables** — and

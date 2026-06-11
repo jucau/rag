@@ -59,21 +59,63 @@ class IngestWikipedia extends Command
 
         $this->info(sprintf('Ingesting %d article(s)…', count($titles)));
 
+        $startedAt = hrtime(true);
+        $stats = ['ok' => 0, 'skipped' => 0, 'chunks' => 0, 'structured' => 0, 'no_wikitext' => 0];
+
         foreach ($titles as $title) {
             $page = $wikipedia->fetchPage($title);
 
             if (! $page instanceof WikipediaPage) {
-                $this->warn(sprintf('— "%s": page not found or empty, skipped.', $title));
+                $this->warn(sprintf('⚠ "%s": page not found or empty, skipped.', $title));
+                ++$stats['skipped'];
 
                 continue;
             }
 
-            $chunkCount = $this->ingestPage($page, $wikipedia, $extractor, $chunker, $embeddings);
+            $result = $this->ingestPage($page, $wikipedia, $extractor, $chunker, $embeddings);
 
-            $this->line(sprintf('✔ %s — %d chunk(s)', $page->title, $chunkCount));
+            // The silent-failure lesson of 2026-06-11: make every step
+            // measurable in the output. A wikitext that stops coming back
+            // or chunk counts that stop moving must be visible live.
+            $this->line(sprintf(
+                '✔ %s — %d chunk(s)%s — %d structured section(s)',
+                $page->title,
+                $result['chunks'],
+                $result['previous'] === null ? '' : sprintf(' (was %d)', $result['previous']),
+                $result['structured'],
+            ));
+
+            if ($result['wikitext_missing']) {
+                $this->warn(sprintf('⚠ %s: no wikitext returned — structured data skipped.', $page->title));
+                ++$stats['no_wikitext'];
+            }
+
+            ++$stats['ok'];
+            $stats['chunks'] += $result['chunks'];
+            $stats['structured'] += $result['structured'];
 
             // Politeness towards the Wikimedia API between articles.
             Sleep::usleep(200_000);
+        }
+
+        $elapsed = (int) round((hrtime(true) - $startedAt) / 1_000_000_000);
+
+        $this->newLine();
+        $this->info(sprintf(
+            'Done in %dm%02ds — %d article(s) ingested (%d skipped), %d chunks, %d structured sections, %d article(s) without wikitext.',
+            intdiv($elapsed, 60),
+            $elapsed % 60,
+            $stats['ok'],
+            $stats['skipped'],
+            $stats['chunks'],
+            $stats['structured'],
+            $stats['no_wikitext'],
+        ));
+
+        if ($stats['ok'] > 0 && $stats['structured'] === 0) {
+            $this->error('Sanity check: no structured section extracted on the whole run — the wikitext pipeline is probably broken (see ADR-0015).');
+
+            return self::FAILURE;
         }
 
         return self::SUCCESS;
@@ -110,25 +152,25 @@ class IngestWikipedia extends Command
         return array_values(array_unique($titles));
     }
 
+    /**
+     * @return array{chunks: int, previous: int|null, structured: int, wikitext_missing: bool}
+     */
     private function ingestPage(
         WikipediaPage $page,
         WikipediaClient $wikipedia,
         WikitextStructuredExtractor $extractor,
         SectionAwareChunker $chunker,
         EmbeddingProvider $embeddings,
-    ): int {
+    ): array {
         // The prose comes from the clean plain-text extract; the infobox
         // and tables (stripped from extracts) are recovered from the raw
         // wikitext and appended as regular "== … ==" sections (ADR-0015).
         $content = $page->content;
         $wikitext = $wikipedia->fetchWikitext($page->title);
+        $structured = $wikitext === null ? [] : $extractor->extract($wikitext);
 
-        if ($wikitext !== null) {
-            $structured = $extractor->extract($wikitext);
-
-            if ($structured !== []) {
-                $content .= "\n\n" . implode("\n\n", $structured);
-            }
+        if ($structured !== []) {
+            $content .= "\n\n" . implode("\n\n", $structured);
         }
 
         // Idempotent by (source, external_id): re-ingesting refreshes.
@@ -141,6 +183,10 @@ class IngestWikipedia extends Command
                 'fetched_at' => now(),
             ],
         );
+
+        // On a refresh, the previous chunk count is the reference the new
+        // one is compared against in the output.
+        $previous = $document->wasRecentlyCreated ? null : $document->chunks()->count();
 
         // Chunks are rebuilt from scratch: stale vectors must not survive
         // a content update.
@@ -163,6 +209,11 @@ class IngestWikipedia extends Command
             }
         }
 
-        return count($chunks);
+        return [
+            'chunks' => count($chunks),
+            'previous' => $previous,
+            'structured' => count($structured),
+            'wikitext_missing' => $wikitext === null,
+        ];
     }
 }
