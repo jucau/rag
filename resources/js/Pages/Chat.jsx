@@ -1,4 +1,5 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
+import Sources from '../Components/Sources';
 import { useEffect, useRef, useState } from 'react';
 
 const csrfToken = () =>
@@ -30,57 +31,6 @@ function TypingIndicator() {
                     style={{ animationDelay: `${i * 150}ms` }}
                 />
             ))}
-        </div>
-    );
-}
-
-function Sources({ sources }) {
-    const documents = [...new Map(sources.map((s) => [s.url, s])).values()];
-
-    return (
-        <div className="mt-3 border-t border-slate-700 pt-2 text-xs text-slate-400">
-            <span className="font-semibold">Articles :</span>
-            <ul className="mt-1 space-y-0.5">
-                {documents.map((source) => (
-                    <li key={source.url}>
-                        <a
-                            href={source.url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="hover:text-emerald-400 underline decoration-slate-600 underline-offset-2"
-                        >
-                            {source.title}
-                        </a>
-                    </li>
-                ))}
-            </ul>
-
-            {sources.some((s) => s.content) && (
-                <div className="mt-2">
-                    <span className="font-semibold">
-                        Passages utilisés (les « Source N » de la réponse) :
-                    </span>
-                    <ul className="mt-1 space-y-1">
-                        {sources.map((source) => (
-                            <li key={source.chunk_id}>
-                                <details className="group rounded-lg border border-slate-700/60 bg-slate-900/60">
-                                    <summary className="cursor-pointer select-none px-2.5 py-1.5 text-slate-300 hover:text-emerald-400">
-                                        <span className="font-medium">Source {source.position}</span>
-                                        {' — '}
-                                        {source.title}
-                                        <span className="ml-1 text-slate-500">
-                                            · distance {source.distance.toFixed(2)}
-                                        </span>
-                                    </summary>
-                                    <pre className="max-h-56 overflow-y-auto whitespace-pre-wrap border-t border-slate-700/60 px-2.5 py-2 font-sans text-[11px] leading-relaxed text-slate-400">
-                                        {source.content}
-                                    </pre>
-                                </details>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            )}
         </div>
     );
 }
@@ -237,15 +187,23 @@ export default function Chat({ models }) {
             <Head title="RAG Football" />
             <div className="flex min-h-screen flex-col bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-slate-100">
                 <header className="border-b border-slate-800 px-6 py-4">
-                    <div className="mx-auto flex max-w-3xl items-center gap-3">
-                        <span className="text-2xl">⚽</span>
-                        <div>
-                            <h1 className="text-lg font-semibold">RAG Football</h1>
-                            <p className="text-xs text-slate-400">
-                                Posez vos questions sur le corpus (Ligue 1, OL, OM, PSG…) —
-                                réponses sourcées depuis Wikipédia
-                            </p>
+                    <div className="mx-auto flex max-w-3xl items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <span className="text-2xl">⚽</span>
+                            <div>
+                                <h1 className="text-lg font-semibold">RAG Football</h1>
+                                <p className="text-xs text-slate-400">
+                                    Posez vos questions sur le corpus (Ligue 1, OL, OM, PSG…) —
+                                    réponses sourcées depuis Wikipédia
+                                </p>
+                            </div>
                         </div>
+                        <Link
+                            href="/history"
+                            className="rounded-xl border border-slate-700 px-3 py-1.5 text-sm text-slate-300 transition hover:border-emerald-500 hover:text-emerald-400"
+                        >
+                            Historique →
+                        </Link>
                     </div>
                 </header>
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\AskController;
 use App\Http\Controllers\AskStreamController;
+use App\Http\Controllers\HistoryController;
 use App\Rag\Chat\ChatProviderName;
 use App\Rag\Chat\OllamaModel;
 use Illuminate\Support\Facades\Route;
@@ -27,6 +28,8 @@ Route::get('/', function (): Response {
 
     return Inertia::render('Chat', ['models' => $models]);
 })->name('home');
+
+Route::get('/history', HistoryController::class)->name('history');
 
 Route::post('/ask', AskController::class)->name('ask');
 Route::post('/ask-stream', AskStreamController::class)->name('ask.stream');
