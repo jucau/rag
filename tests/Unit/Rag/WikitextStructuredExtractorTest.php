@@ -110,6 +110,66 @@ final class WikitextStructuredExtractorTest extends TestCase
     }
 
     #[Test]
+    public function mid_table_header_rows_reset_the_column_mapping(): void
+    {
+        // Reproduces the OM "Bilan par compétition" table: a domestic
+        // section (with a "Titres" column) followed by a European
+        // section with its own headers — pairing European rows against
+        // domestic headers produced the real "Titres : 116" bad data.
+        $wikitext = <<<'WIKI'
+            {| class="wikitable"
+            |+ Bilan par compétition
+            ! Championnat !! Saisons !! Titres !! J
+            |-
+            | Division 1 || 75 || 9 || 2684
+            |-
+            ! Compétition !! Saisons !! {{Abréviation|J|Matchs joués}} !! {{Abréviation|G|Gagnés}}
+            |-
+            | Ligue des champions || 17 || 116 || 47
+            |}
+            WIKI;
+
+        $sections = $this->extractor->extract($wikitext);
+
+        $this->assertStringContainsString('Titres : 9', $sections[0]);
+        $this->assertStringContainsString('Matchs joués : 116', $sections[0]);
+        $this->assertStringNotContainsString('Titres : 116', $sections[0]);
+    }
+
+    #[Test]
+    public function pipes_inside_templates_do_not_split_cells_or_leak_debris(): void
+    {
+        $wikitext = <<<'WIKI'
+            {| class="wikitable"
+            ! Compétition !! Résultat
+            |-
+            | Ligue des champions || align="center" bgcolor={{fc|or}}|Vainqueur (1993)
+            |}
+            WIKI;
+
+        $sections = $this->extractor->extract($wikitext);
+
+        $this->assertStringContainsString('Résultat : Vainqueur (1993)', $sections[0]);
+        $this->assertStringNotContainsString('or}}', $sections[0]);
+    }
+
+    #[Test]
+    public function a_cell_that_is_only_a_template_is_not_mistaken_for_attributes(): void
+    {
+        $wikitext = <<<'WIKI'
+            {| class="wikitable"
+            ! Rang !! Points
+            |-
+            | {{nobr|1}} || 45
+            |}
+            WIKI;
+
+        $sections = $this->extractor->extract($wikitext);
+
+        $this->assertStringContainsString('Rang : 1', $sections[0]);
+    }
+
+    #[Test]
     public function it_returns_nothing_when_there_is_no_structured_data(): void
     {
         $this->assertSame([], $this->extractor->extract('Du texte sans structure.'));

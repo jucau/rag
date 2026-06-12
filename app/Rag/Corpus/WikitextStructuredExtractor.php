@@ -149,8 +149,9 @@ final readonly class WikitextStructuredExtractor
     {
         $caption = '';
         $headers = [];
-        $rows = [];
+        $lines = [];
         $currentRow = [];
+        $inHeaderBlock = false;
 
         foreach (explode("\n", $block) as $line) {
             $line = trim($line);
@@ -174,7 +175,10 @@ final readonly class WikitextStructuredExtractor
 
             if (str_starts_with($line, '|-')) {
                 if ($currentRow !== []) {
-                    $rows[] = $currentRow;
+                    // Linearise immediately: rows must be paired with the
+                    // headers active at THIS point of the table, not with
+                    // whatever headers the table ends with.
+                    $lines[] = $this->lineariseRow($headers, $currentRow);
                     $currentRow = [];
                 }
 
@@ -182,7 +186,22 @@ final readonly class WikitextStructuredExtractor
             }
 
             if (str_starts_with($line, '!')) {
-                foreach (preg_split('/!!/', substr($line, 1)) ?: [] as $cell) {
+                // A header row appearing after data rows starts a new
+                // sub-table section (e.g. domestic vs European records):
+                // its headers REPLACE the previous ones — appending them
+                // misaligned every following row (the "Titres : 116" bug).
+                if (! $inHeaderBlock && ($lines !== [] || $currentRow !== [])) {
+                    if ($currentRow !== []) {
+                        $lines[] = $this->lineariseRow($headers, $currentRow);
+                        $currentRow = [];
+                    }
+
+                    $headers = [];
+                }
+
+                $inHeaderBlock = true;
+
+                foreach ($this->splitCells(substr($line, 1), '!!') as $cell) {
                     $headers[] = $this->clean($this->stripCellAttributes($cell));
                 }
 
@@ -190,26 +209,25 @@ final readonly class WikitextStructuredExtractor
             }
 
             if (str_starts_with($line, '|')) {
-                foreach (preg_split('/\|\|/', substr($line, 1)) ?: [] as $cell) {
+                $inHeaderBlock = false;
+
+                foreach ($this->splitCells(substr($line, 1)) as $cell) {
                     $currentRow[] = $this->clean($this->stripCellAttributes($cell));
                 }
             }
         }
 
         if ($currentRow !== []) {
-            $rows[] = $currentRow;
+            $lines[] = $this->lineariseRow($headers, $currentRow);
         }
 
-        if ($rows === []) {
+        $lines = array_values(array_filter($lines, fn (string $l): bool => $l !== ''));
+
+        if ($lines === []) {
             return null;
         }
 
-        $lines = array_map(
-            fn (array $row): string => $this->lineariseRow($headers, $row),
-            $rows,
-        );
-
-        return [$caption, implode("\n", array_filter($lines, fn (string $l): bool => $l !== ''))];
+        return [$caption, implode("\n", $lines)];
     }
 
     /**
@@ -244,15 +262,80 @@ final readonly class WikitextStructuredExtractor
     }
 
     /**
-     * "style="…" | value" → "value" (cell attributes end at the first
-     * single pipe inside a cell).
+     * Splits a row line into cells on "||" (or "!!" for headers),
+     * ignoring separators nested inside {{…}} or [[…]] — a template
+     * like {{fc|or}} must never split a cell.
+     *
+     * @return list<string>
+     */
+    private function splitCells(string $line, string $separator = '||'): array
+    {
+        $cells = [];
+        $current = '';
+        $braces = 0;
+        $brackets = 0;
+        $length = strlen($line);
+
+        for ($i = 0; $i < $length; ++$i) {
+            $pair = $line[$i] . ($line[$i + 1] ?? '');
+
+            if ($pair === '{{') {
+                ++$braces;
+            } elseif ($pair === '}}') {
+                --$braces;
+            } elseif ($pair === '[[') {
+                ++$brackets;
+            } elseif ($pair === ']]') {
+                --$brackets;
+            }
+
+            if ($pair === $separator && $braces === 0 && $brackets === 0) {
+                $cells[] = $current;
+                $current = '';
+                ++$i;
+
+                continue;
+            }
+
+            $current .= $line[$i];
+        }
+
+        $cells[] = $current;
+
+        return $cells;
+    }
+
+    /**
+     * "style="…" | value" → "value". The attribute part ends at the
+     * first TOP-LEVEL pipe (a pipe inside {{fc|or}} is template syntax,
+     * not an attribute separator — the "or}}|Vainqueur" debris bug),
+     * and is only stripped when it actually looks like attributes
+     * (contains "=").
      */
     private function stripCellAttributes(string $cell): string
     {
-        $position = strpos($cell, '|');
+        $braces = 0;
+        $brackets = 0;
+        $length = strlen($cell);
 
-        if ($position !== false && ! str_contains(substr($cell, 0, $position), '[[')) {
-            return substr($cell, $position + 1);
+        for ($i = 0; $i < $length; ++$i) {
+            $pair = $cell[$i] . ($cell[$i + 1] ?? '');
+
+            if ($pair === '{{') {
+                ++$braces;
+            } elseif ($pair === '}}') {
+                --$braces;
+            } elseif ($pair === '[[') {
+                ++$brackets;
+            } elseif ($pair === ']]') {
+                --$brackets;
+            }
+
+            if ($cell[$i] === '|' && $braces === 0 && $brackets === 0) {
+                $prefix = substr($cell, 0, $i);
+
+                return str_contains($prefix, '=') ? substr($cell, $i + 1) : $cell;
+            }
         }
 
         return $cell;

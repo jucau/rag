@@ -28,8 +28,12 @@ final readonly class DocumentIndexer
      *   "Matchs : 116") and infobox heading marked as current facts —
      *   fixes the "116 Ligues des champions" misread found by the
      *   benchmark (docs/04).
+     * - 2026-06-12.2 = mid-table header rows reset the column headers
+     *   (sub-table sections were misaligned: the REAL "Titres : 116"
+     *   bug, found by Julien in the chunks), and cell splitting/attribute
+     *   stripping ignore pipes inside templates ({{fc|or}} debris).
      */
-    public const string VERSION = '2026-06-12.1';
+    public const string VERSION = '2026-06-12.2';
 
     /**
      * How many chunks are embedded per Ollama call.

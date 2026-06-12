@@ -123,20 +123,24 @@ failures point at the pipeline**.
 2. **Shared number misuse (B04, E06)**: gemma3:4b and qwen3 both
    hallucinated *"116 Ligues des champions"* for OM.
 
-   > **Erratum (2026-06-12).** The initial diagnosis blamed the
-   > linearised *"Bilan par compétition"* table. After expanding the
-   > abbreviated table headers (strategy 2026-06-12.1) the error
-   > persisted — inspection of the actual chunks showed the real
-   > source: **"capital social de 116,5 millions d'euros"** in the
-   > *Statut juridique* section, fused into a trophy count by the
-   > model. This is fabrication-by-assembly (gemma3:4b's signature
-   > failure mode), not a linearisation bug; the default model
-   > (llama3.2:3b, ADR-0019) answers the same question correctly on
-   > the same chunks. The header expansion remains in place as
-   > hardening — E06-style rows ("Perdus : 6" instead of "P : 6") are
-   > genuinely less ambiguous — and the lesson is methodological:
-   > **verify a diagnosis against the retrieved chunks, not against
-   > the model's own source citations** (models cite carelessly).
+   > **Erratum (2026-06-12) — corrected twice, final version.** The
+   > initial diagnosis blamed ambiguous abbreviated headers; a first
+   > erratum then blamed the model fusing the SASP share capital
+   > ("116,5 millions d'euros") into a trophy count. **Both were
+   > wrong.** Julien inspected the retrieved chunks and found the
+   > smoking gun: a chunk literally saying **"Titres : 116"**. Root
+   > cause: the OM table contains two sub-sections (domestic, then
+   > European) each with its own header row — the parser *appended*
+   > the second header row instead of replacing the first, so every
+   > European row was paired with domestic headers ("Titres" ↔ the
+   > matches-played column). A second parser bug let pipes inside
+   > templates (`{{fc|or}}`) split cells, leaving `or}}|` debris.
+   > Both fixed in strategy 2026-06-12.2 (with regression tests
+   > reproducing the OM table); gemma3:4b now answers *"une Ligue des
+   > champions, en 1993"* on the fixed chunks. Lessons, in order:
+   > **bad data manufactures hallucinations** — grounding is only as
+   > good as the chunks; and a diagnosis is only proven when the fix
+   > makes the symptom disappear (ours didn't, twice).
 3. **Threshold blind spot (F02, F04)**: Roland-Garros and the Premier
    League pass the 0.65 distance gate (football-adjacent vocabulary)
    and reach the model. Three models refused properly; gemma3:1b made
