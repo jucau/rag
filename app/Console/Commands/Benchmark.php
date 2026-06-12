@@ -105,7 +105,23 @@ class Benchmark extends Command
             );
 
             foreach ($questions as $question) {
-                $result = $service->ask($question['question']);
+                try {
+                    $result = $service->ask($question['question']);
+                } catch (Throwable $exception) {
+                    // One degenerate generation (e.g. a 600s Ollama
+                    // timeout) must not kill the remaining runs: log it
+                    // as a failed run and move on.
+                    $this->warn(sprintf('⚠ [%s][%s] failed: %s', $model->value, $question['id'], $exception->getMessage()));
+                    $log->event('error', [
+                        'model' => $model->value,
+                        'question_id' => $question['id'],
+                        'question' => $question['question'],
+                        'error' => mb_substr($exception->getMessage(), 0, 300),
+                    ]);
+                    $this->stats['errors'] = ($this->stats['errors'] ?? 0) + 1;
+
+                    continue;
+                }
 
                 $this->line(sprintf(
                     '[%s][%s] %4.1fs — %s',
