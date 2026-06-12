@@ -1,7 +1,9 @@
 # ADR-0019 — llama3.2:3b becomes the default local model
 
 **Status:** Accepted — 2026-06-11. **Supersedes ADR-0016** (which kept
-gemma3:4b on the basis of a 5-question benchmark).
+gemma3:4b on the basis of a 5-question benchmark). Confirmed on
+2026-06-12 by the [103-question benchmark](../05-benchmark-103-questions.md)
+(llama: 86%, one wrong answer in 103).
 
 ## Context
 

@@ -1,5 +1,8 @@
 # Local model benchmark — 50 questions × 4 models (2026-06-11)
 
+> Superseded in scope by the [103-question v2 benchmark](05-benchmark-103-questions.md)
+> (2026-06-12), which confirmed and amplified the verdict below.
+
 The first benchmark (5 questions, [03-answer-quality.md](03-answer-quality.md))
 was too small to be conclusive — and, as this larger run shows, it was
 **misleading**. This document is the full analysis of the 200-run
