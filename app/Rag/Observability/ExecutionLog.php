@@ -26,6 +26,8 @@ final class ExecutionLog
 
     private readonly int $startedNs;
 
+    private readonly string $basePath;
+
     /**
      * @param array<string, mixed> $options
      */
@@ -35,6 +37,25 @@ final class ExecutionLog
     ) {
         $this->startedAt = Date::now();
         $this->startedNs = (int) hrtime(true);
+
+        $directory = storage_path('rag-runs');
+        File::ensureDirectoryExists($directory);
+
+        $this->basePath = sprintf(
+            '%s/%s_%s',
+            $directory,
+            $this->startedAt->format('Y-m-d_His'),
+            str_replace(':', '-', $this->command),
+        );
+    }
+
+    /**
+     * The live event stream: one JSON line per event, appended as it
+     * happens — `tail -f` this file to watch a run in real time.
+     */
+    public function livePath(): string
+    {
+        return $this->basePath . '.jsonl';
     }
 
     /**
@@ -45,11 +66,20 @@ final class ExecutionLog
      */
     public function event(string $type, array $data = []): void
     {
-        $this->events[] = [
+        $event = [
             't' => Date::now()->toIso8601String(),
             'type' => $type,
             ...$data,
         ];
+
+        $this->events[] = $event;
+
+        // Streamed immediately (unlike the consolidated file written at
+        // finish()): a crashed or running run is observable live.
+        File::append(
+            $this->livePath(),
+            json_encode($event, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . PHP_EOL,
+        );
     }
 
     /**
@@ -73,15 +103,7 @@ final class ExecutionLog
             'events' => $this->events,
         ];
 
-        $directory = storage_path('rag-runs');
-        File::ensureDirectoryExists($directory);
-
-        $path = sprintf(
-            '%s/%s_%s.json',
-            $directory,
-            $this->startedAt->format('Y-m-d_His'),
-            str_replace(':', '-', $this->command),
-        );
+        $path = $this->basePath . '.json';
 
         File::put($path, (string) json_encode(
             $payload,

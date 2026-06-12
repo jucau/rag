@@ -1,52 +1,620 @@
 [
-    {"id": "A01", "category": "factuel-simple", "question": "Quelle est la capacité du Parc Olympique lyonnais ?", "expected": "59 186 places"},
-    {"id": "A02", "category": "factuel-simple", "question": "Qui est l'entraîneur actuel de l'Olympique de Marseille ?", "expected": "Habib Beye (infobox du corpus)"},
-    {"id": "A03", "category": "factuel-simple", "question": "En quelle année le Football Club de Nantes a-t-il été fondé ?", "expected": "1943"},
-    {"id": "A04", "category": "factuel-simple", "question": "Quel est le surnom des joueurs du RC Lens ?", "expected": "Sang et Or"},
-    {"id": "A05", "category": "factuel-simple", "question": "Quel est le surnom de l'AS Saint-Étienne ?", "expected": "Les Verts"},
-    {"id": "A06", "category": "factuel-simple", "question": "Dans quel stade le LOSC Lille joue-t-il à domicile ?", "expected": "Stade Pierre-Mauroy (Decathlon Arena), Villeneuve-d'Ascq"},
-    {"id": "A07", "category": "factuel-simple", "question": "Quel est le surnom des supporters de l'Olympique lyonnais ?", "expected": "les Gones"},
-    {"id": "A08", "category": "factuel-simple", "question": "Qui est le président actuel de l'Olympique lyonnais ?", "expected": "Michele Kang (selon l'infobox du corpus)"},
-    {"id": "A09", "category": "factuel-simple", "question": "En quelle année le Paris Saint-Germain a-t-il été fondé ?", "expected": "1970"},
-    {"id": "A10", "category": "factuel-simple", "question": "Combien de places compte le stade Geoffroy-Guichard ?", "expected": "~41 965 (selon corpus)"},
-    {"id": "A11", "category": "factuel-simple", "question": "Quel club joue ses matchs à domicile au stade de la Beaujoire ?", "expected": "FC Nantes"},
-    {"id": "A12", "category": "factuel-simple", "question": "Dans quelle ville le Montpellier HSC est-il basé ?", "expected": "Montpellier"},
-    {"id": "B01", "category": "factuel-historique", "question": "Combien de titres de champion de France l'équipe masculine de l'Olympique lyonnais a-t-elle remportés, et sur quelle période ?", "expected": "7 titres consécutifs, 2002-2008"},
-    {"id": "B02", "category": "factuel-historique", "question": "Quel club détient le record de titres de champion de France ?", "expected": "PSG (13 titres)"},
-    {"id": "B03", "category": "factuel-historique", "question": "Qui était l'entraîneur du Stade de Reims pendant sa grande époque des années 1950 ?", "expected": "Albert Batteux"},
-    {"id": "B04", "category": "factuel-historique", "question": "Combien de Ligues des champions l'Olympique de Marseille a-t-il remportées ?", "expected": "1 (1993)"},
-    {"id": "B05", "category": "factuel-historique", "question": "Quelle est la seule équipe française à avoir gagné la Ligue des champions masculine ?", "expected": "OM (1993)"},
-    {"id": "B06", "category": "factuel-historique", "question": "Qui est le meilleur buteur de l'histoire de l'Olympique lyonnais ?", "expected": "Fleury Di Nallo (~222 buts)"},
-    {"id": "B07", "category": "factuel-historique", "question": "En quelle année l'AS Saint-Étienne a-t-elle disputé sa finale de Coupe d'Europe des clubs champions ?", "expected": "1976 (Glasgow, perdue contre le Bayern)"},
-    {"id": "B08", "category": "factuel-historique", "question": "Combien de titres de champion de France l'AS Saint-Étienne compte-t-elle ?", "expected": "10"},
-    {"id": "B09", "category": "factuel-historique", "question": "De quel club Sonny Anderson venait-il avant de signer à l'OL en 1999 ?", "expected": "FC Barcelone"},
-    {"id": "B10", "category": "factuel-historique", "question": "Quel joueur brésilien célèbre pour ses coups francs a marqué l'histoire de l'OL dans les années 2000 ?", "expected": "Juninho (Pernambucano)"},
-    {"id": "C01", "category": "synthese", "question": "Pourquoi le Stade de Reims est-il considéré comme un club historique du football français ?", "expected": "6 titres 1949-1962, Kopa/Fontaine/Batteux, finales C1 1956/1959"},
-    {"id": "C02", "category": "synthese", "question": "Pourquoi le derby entre l'OL et l'AS Saint-Étienne est-il si particulier ?", "expected": "rivalité régionale Rhône-Alpes, histoire, oppositions de cultures"},
-    {"id": "C03", "category": "synthese", "question": "Raconte l'épopée européenne de l'AS Saint-Étienne dans les années 1970.", "expected": "épopée 1974-1977, finale 1976, les poteaux carrés"},
-    {"id": "C04", "category": "synthese", "question": "Comment l'Olympique lyonnais est-il devenu le club dominant des années 2000 ?", "expected": "Aulas, gestion, formation, 7 titres consécutifs"},
-    {"id": "C05", "category": "synthese", "question": "Quel rôle Jean-Michel Aulas a-t-il joué dans l'histoire de l'OL ?", "expected": "président 1987-2023, OL Groupe, stade, succès masculins et féminins"},
-    {"id": "C06", "category": "synthese", "question": "Pourquoi le FC Sochaux-Montbéliard occupe-t-il une place particulière dans l'histoire du championnat de France ?", "expected": "club Peugeot, pionnier du professionnalisme, fondateur du championnat"},
-    {"id": "C07", "category": "synthese", "question": "Qui sont les Bad Gones et quelle est leur histoire ?", "expected": "groupe ultra de l'OL fondé en 1987, virage nord"},
-    {"id": "C08", "category": "synthese", "question": "Quelle est l'histoire du Paris FC et quel lien a-t-il avec le PSG ?", "expected": "fondé 1969, fusion puis scission du PSG en 1972"},
-    {"id": "D01", "category": "desambiguisation", "question": "Combien de titres de champion de France l'équipe féminine de l'OL (OL Lyonnes) a-t-elle remportés ?", "expected": "~18 titres dont 14 consécutifs 2007-2020 (≠ 7 des hommes)"},
-    {"id": "D02", "category": "desambiguisation", "question": "Combien de Ligues des champions féminines l'OL Lyonnes a-t-elle gagnées ?", "expected": "8 (record)"},
-    {"id": "D03", "category": "desambiguisation", "question": "Entre l'équipe masculine et l'équipe féminine de l'OL, laquelle a gagné la Ligue des champions ?", "expected": "la féminine (8 fois) ; jamais les hommes"},
-    {"id": "D04", "category": "desambiguisation", "question": "Le Paris FC et le Paris Saint-Germain sont-ils le même club ?", "expected": "non — scission en 1972"},
-    {"id": "D05", "category": "desambiguisation", "question": "Quel est le plus ancien club de football encore en activité en France ?", "expected": "Le Havre AC (1872 omnisports / 1894 football)"},
-    {"id": "D06", "category": "desambiguisation", "question": "Dans quel stade le club du Stade de Reims joue-t-il ?", "expected": "stade Auguste-Delaune (piège club nommé 'Stade')"},
-    {"id": "E01", "category": "piege-fabrication", "question": "Juninho avait-il un surnom officiel ?", "expected": "PIÈGE : pas de surnom explicite dans le corpus — doit le dire, pas inventer"},
-    {"id": "E02", "category": "piege-fabrication", "question": "Combien de buts Mickaël Pagis a-t-il marqués pour l'OM ?", "expected": "PIÈGE : absent du corpus — refus attendu"},
-    {"id": "E03", "category": "piege-fabrication", "question": "Pourquoi Zinédine Zidane a-t-il quitté l'Olympique lyonnais ?", "expected": "FAUX PRÉSUPPOSÉ : Zidane n'a jamais joué à l'OL — doit corriger ou refuser"},
-    {"id": "E04", "category": "piege-fabrication", "question": "Quel club Kylian Mbappé entraîne-t-il actuellement ?", "expected": "FAUX PRÉSUPPOSÉ : Mbappé est joueur, pas entraîneur"},
-    {"id": "E05", "category": "piege-fabrication", "question": "Quelle sera la capacité du stade Vélodrome après les travaux de 2030 ?", "expected": "PIÈGE : information inexistante — refus attendu"},
-    {"id": "E06", "category": "piege-fabrication", "question": "Cite le palmarès du RC Lens en Ligue des champions.", "expected": "PIÈGE : aucun titre européen majeur — doit le dire"},
-    {"id": "E07", "category": "piege-fabrication", "question": "Qui était le gardien titulaire de l'OL lors du titre de 2003 ?", "expected": "Grégory Coupet si sourcé, sinon refus honnête (pas d'invention)"},
-    {"id": "E08", "category": "piege-fabrication", "question": "Quel record du monde l'attaquant du Stade brestois a-t-il battu en 2024 ?", "expected": "FAUX PRÉSUPPOSÉ : aucun record — refus attendu"},
-    {"id": "F01", "category": "hors-corpus", "question": "Quelle est la meilleure recette de la quiche lorraine ?", "expected": "GUARD attendu (hors corpus, 0s de génération)"},
-    {"id": "F02", "category": "hors-corpus", "question": "Qui a gagné Roland-Garros en 2025 ?", "expected": "GUARD ou refus (tennis)"},
-    {"id": "F03", "category": "hors-corpus", "question": "Explique-moi le théorème de Pythagore.", "expected": "GUARD attendu"},
-    {"id": "F04", "category": "hors-corpus", "question": "Qui a gagné la Premier League anglaise en 2024 ?", "expected": "cas limite : vocabulaire foot mais hors corpus français — guard OU refus honnête"},
-    {"id": "G01", "category": "question-biaisee", "question": "Prouve que l'Olympique de Marseille est un club surcoté.", "expected": "refus du présupposé, réponse neutre et factuelle"},
-    {"id": "G02", "category": "question-biaisee", "question": "Pourquoi l'arbitrage favorise-t-il toujours le PSG ?", "expected": "refus du présupposé non factuel"}
+    {
+        "id": "A01",
+        "category": "factuel-simple",
+        "question": "Quelle est la capacité du Parc Olympique lyonnais ?",
+        "expected": "59 186 places"
+    },
+    {
+        "id": "A02",
+        "category": "factuel-simple",
+        "question": "Qui est l'entraîneur actuel de l'Olympique de Marseille ?",
+        "expected": "Habib Beye (infobox du corpus)"
+    },
+    {
+        "id": "A03",
+        "category": "factuel-simple",
+        "question": "En quelle année le Football Club de Nantes a-t-il été fondé ?",
+        "expected": "1943"
+    },
+    {
+        "id": "A04",
+        "category": "factuel-simple",
+        "question": "Quel est le surnom des joueurs du RC Lens ?",
+        "expected": "Sang et Or"
+    },
+    {
+        "id": "A05",
+        "category": "factuel-simple",
+        "question": "Quel est le surnom de l'AS Saint-Étienne ?",
+        "expected": "Les Verts"
+    },
+    {
+        "id": "A06",
+        "category": "factuel-simple",
+        "question": "Dans quel stade le LOSC Lille joue-t-il à domicile ?",
+        "expected": "Stade Pierre-Mauroy (Decathlon Arena), Villeneuve-d'Ascq"
+    },
+    {
+        "id": "A07",
+        "category": "factuel-simple",
+        "question": "Quel est le surnom des supporters de l'Olympique lyonnais ?",
+        "expected": "les Gones"
+    },
+    {
+        "id": "A08",
+        "category": "factuel-simple",
+        "question": "Qui est le président actuel de l'Olympique lyonnais ?",
+        "expected": "Michele Kang (selon l'infobox du corpus)"
+    },
+    {
+        "id": "A09",
+        "category": "factuel-simple",
+        "question": "En quelle année le Paris Saint-Germain a-t-il été fondé ?",
+        "expected": "1970"
+    },
+    {
+        "id": "A10",
+        "category": "factuel-simple",
+        "question": "Combien de places compte le stade Geoffroy-Guichard ?",
+        "expected": "~41 965 (selon corpus)"
+    },
+    {
+        "id": "A11",
+        "category": "factuel-simple",
+        "question": "Quel club joue ses matchs à domicile au stade de la Beaujoire ?",
+        "expected": "FC Nantes"
+    },
+    {
+        "id": "A12",
+        "category": "factuel-simple",
+        "question": "Dans quelle ville le Montpellier HSC est-il basé ?",
+        "expected": "Montpellier"
+    },
+    {
+        "id": "B01",
+        "category": "factuel-historique",
+        "question": "Combien de titres de champion de France l'équipe masculine de l'Olympique lyonnais a-t-elle remportés, et sur quelle période ?",
+        "expected": "7 titres consécutifs, 2002-2008"
+    },
+    {
+        "id": "B02",
+        "category": "factuel-historique",
+        "question": "Quel club détient le record de titres de champion de France ?",
+        "expected": "PSG (13 titres)"
+    },
+    {
+        "id": "B03",
+        "category": "factuel-historique",
+        "question": "Qui était l'entraîneur du Stade de Reims pendant sa grande époque des années 1950 ?",
+        "expected": "Albert Batteux"
+    },
+    {
+        "id": "B04",
+        "category": "factuel-historique",
+        "question": "Combien de Ligues des champions l'Olympique de Marseille a-t-il remportées ?",
+        "expected": "1 (1993)"
+    },
+    {
+        "id": "B05",
+        "category": "factuel-historique",
+        "question": "Quelle est la seule équipe française à avoir gagné la Ligue des champions masculine ?",
+        "expected": "OM (1993)"
+    },
+    {
+        "id": "B06",
+        "category": "factuel-historique",
+        "question": "Qui est le meilleur buteur de l'histoire de l'Olympique lyonnais ?",
+        "expected": "Fleury Di Nallo (~222 buts)"
+    },
+    {
+        "id": "B07",
+        "category": "factuel-historique",
+        "question": "En quelle année l'AS Saint-Étienne a-t-elle disputé sa finale de Coupe d'Europe des clubs champions ?",
+        "expected": "1976 (Glasgow, perdue contre le Bayern)"
+    },
+    {
+        "id": "B08",
+        "category": "factuel-historique",
+        "question": "Combien de titres de champion de France l'AS Saint-Étienne compte-t-elle ?",
+        "expected": "10"
+    },
+    {
+        "id": "B09",
+        "category": "factuel-historique",
+        "question": "De quel club Sonny Anderson venait-il avant de signer à l'OL en 1999 ?",
+        "expected": "FC Barcelone"
+    },
+    {
+        "id": "B10",
+        "category": "factuel-historique",
+        "question": "Quel joueur brésilien célèbre pour ses coups francs a marqué l'histoire de l'OL dans les années 2000 ?",
+        "expected": "Juninho (Pernambucano)"
+    },
+    {
+        "id": "C01",
+        "category": "synthese",
+        "question": "Pourquoi le Stade de Reims est-il considéré comme un club historique du football français ?",
+        "expected": "6 titres 1949-1962, Kopa/Fontaine/Batteux, finales C1 1956/1959"
+    },
+    {
+        "id": "C02",
+        "category": "synthese",
+        "question": "Pourquoi le derby entre l'OL et l'AS Saint-Étienne est-il si particulier ?",
+        "expected": "rivalité régionale Rhône-Alpes, histoire, oppositions de cultures"
+    },
+    {
+        "id": "C03",
+        "category": "synthese",
+        "question": "Raconte l'épopée européenne de l'AS Saint-Étienne dans les années 1970.",
+        "expected": "épopée 1974-1977, finale 1976, les poteaux carrés"
+    },
+    {
+        "id": "C04",
+        "category": "synthese",
+        "question": "Comment l'Olympique lyonnais est-il devenu le club dominant des années 2000 ?",
+        "expected": "Aulas, gestion, formation, 7 titres consécutifs"
+    },
+    {
+        "id": "C05",
+        "category": "synthese",
+        "question": "Quel rôle Jean-Michel Aulas a-t-il joué dans l'histoire de l'OL ?",
+        "expected": "président 1987-2023, OL Groupe, stade, succès masculins et féminins"
+    },
+    {
+        "id": "C06",
+        "category": "synthese",
+        "question": "Pourquoi le FC Sochaux-Montbéliard occupe-t-il une place particulière dans l'histoire du championnat de France ?",
+        "expected": "club Peugeot, pionnier du professionnalisme, fondateur du championnat"
+    },
+    {
+        "id": "C07",
+        "category": "synthese",
+        "question": "Qui sont les Bad Gones et quelle est leur histoire ?",
+        "expected": "groupe ultra de l'OL fondé en 1987, virage nord"
+    },
+    {
+        "id": "C08",
+        "category": "synthese",
+        "question": "Quelle est l'histoire du Paris FC et quel lien a-t-il avec le PSG ?",
+        "expected": "fondé 1969, fusion puis scission du PSG en 1972"
+    },
+    {
+        "id": "D01",
+        "category": "desambiguisation",
+        "question": "Combien de titres de champion de France l'équipe féminine de l'OL (OL Lyonnes) a-t-elle remportés ?",
+        "expected": "~18 titres dont 14 consécutifs 2007-2020 (≠ 7 des hommes)"
+    },
+    {
+        "id": "D02",
+        "category": "desambiguisation",
+        "question": "Combien de Ligues des champions féminines l'OL Lyonnes a-t-elle gagnées ?",
+        "expected": "8 (record)"
+    },
+    {
+        "id": "D03",
+        "category": "desambiguisation",
+        "question": "Entre l'équipe masculine et l'équipe féminine de l'OL, laquelle a gagné la Ligue des champions ?",
+        "expected": "la féminine (8 fois) ; jamais les hommes"
+    },
+    {
+        "id": "D04",
+        "category": "desambiguisation",
+        "question": "Le Paris FC et le Paris Saint-Germain sont-ils le même club ?",
+        "expected": "non — scission en 1972"
+    },
+    {
+        "id": "D05",
+        "category": "desambiguisation",
+        "question": "Quel est le plus ancien club de football encore en activité en France ?",
+        "expected": "Le Havre AC (1872 omnisports / 1894 football)"
+    },
+    {
+        "id": "D06",
+        "category": "desambiguisation",
+        "question": "Dans quel stade le club du Stade de Reims joue-t-il ?",
+        "expected": "stade Auguste-Delaune (piège club nommé 'Stade')"
+    },
+    {
+        "id": "E01",
+        "category": "piege-fabrication",
+        "question": "Juninho avait-il un surnom officiel ?",
+        "expected": "PIÈGE : pas de surnom explicite dans le corpus — doit le dire, pas inventer"
+    },
+    {
+        "id": "E02",
+        "category": "piege-fabrication",
+        "question": "Combien de buts Mickaël Pagis a-t-il marqués pour l'OM ?",
+        "expected": "PIÈGE : absent du corpus — refus attendu"
+    },
+    {
+        "id": "E03",
+        "category": "piege-fabrication",
+        "question": "Pourquoi Zinédine Zidane a-t-il quitté l'Olympique lyonnais ?",
+        "expected": "FAUX PRÉSUPPOSÉ : Zidane n'a jamais joué à l'OL — doit corriger ou refuser"
+    },
+    {
+        "id": "E04",
+        "category": "piege-fabrication",
+        "question": "Quel club Kylian Mbappé entraîne-t-il actuellement ?",
+        "expected": "FAUX PRÉSUPPOSÉ : Mbappé est joueur, pas entraîneur"
+    },
+    {
+        "id": "E05",
+        "category": "piege-fabrication",
+        "question": "Quelle sera la capacité du stade Vélodrome après les travaux de 2030 ?",
+        "expected": "PIÈGE : information inexistante — refus attendu"
+    },
+    {
+        "id": "E06",
+        "category": "piege-fabrication",
+        "question": "Cite le palmarès du RC Lens en Ligue des champions.",
+        "expected": "PIÈGE : aucun titre européen majeur — doit le dire"
+    },
+    {
+        "id": "E07",
+        "category": "piege-fabrication",
+        "question": "Qui était le gardien titulaire de l'OL lors du titre de 2003 ?",
+        "expected": "Grégory Coupet si sourcé, sinon refus honnête (pas d'invention)"
+    },
+    {
+        "id": "E08",
+        "category": "piege-fabrication",
+        "question": "Quel record du monde l'attaquant du Stade brestois a-t-il battu en 2024 ?",
+        "expected": "FAUX PRÉSUPPOSÉ : aucun record — refus attendu"
+    },
+    {
+        "id": "F01",
+        "category": "hors-corpus",
+        "question": "Quelle est la meilleure recette de la quiche lorraine ?",
+        "expected": "GUARD attendu (hors corpus, 0s de génération)"
+    },
+    {
+        "id": "F02",
+        "category": "hors-corpus",
+        "question": "Qui a gagné Roland-Garros en 2025 ?",
+        "expected": "GUARD ou refus (tennis)"
+    },
+    {
+        "id": "F03",
+        "category": "hors-corpus",
+        "question": "Explique-moi le théorème de Pythagore.",
+        "expected": "GUARD attendu"
+    },
+    {
+        "id": "F04",
+        "category": "hors-corpus",
+        "question": "Qui a gagné la Premier League anglaise en 2024 ?",
+        "expected": "cas limite : vocabulaire foot mais hors corpus français — guard OU refus honnête"
+    },
+    {
+        "id": "G01",
+        "category": "question-biaisee",
+        "question": "Prouve que l'Olympique de Marseille est un club surcoté.",
+        "expected": "refus du présupposé, réponse neutre et factuelle"
+    },
+    {
+        "id": "G02",
+        "category": "question-biaisee",
+        "question": "Pourquoi l'arbitrage favorise-t-il toujours le PSG ?",
+        "expected": "refus du présupposé non factuel"
+    },
+    {
+        "id": "A13",
+        "category": "factuel-simple",
+        "question": "Dans quel stade l'AS Monaco joue-t-il à domicile ?",
+        "expected": "Stade Louis-II"
+    },
+    {
+        "id": "A14",
+        "category": "factuel-simple",
+        "question": "En quelle année l'Olympique de Marseille a-t-il été fondé ?",
+        "expected": "1899"
+    },
+    {
+        "id": "A15",
+        "category": "factuel-simple",
+        "question": "Quel est le surnom des joueurs du FC Nantes ?",
+        "expected": "les Canaris"
+    },
+    {
+        "id": "A16",
+        "category": "factuel-simple",
+        "question": "Quel est le surnom du Montpellier HSC ?",
+        "expected": "la Paillade"
+    },
+    {
+        "id": "A17",
+        "category": "factuel-simple",
+        "question": "Dans quel stade le RC Strasbourg joue-t-il ?",
+        "expected": "stade de la Meinau"
+    },
+    {
+        "id": "A18",
+        "category": "factuel-simple",
+        "question": "Quelle est la couleur emblématique des maillots de l'AS Saint-Étienne ?",
+        "expected": "le vert"
+    },
+    {
+        "id": "A19",
+        "category": "factuel-simple",
+        "question": "Dans quel stade le Stade brestois joue-t-il ?",
+        "expected": "stade Francis-Le Blé"
+    },
+    {
+        "id": "A20",
+        "category": "factuel-simple",
+        "question": "Quel club est surnommé « les Dogues » ?",
+        "expected": "LOSC Lille"
+    },
+    {
+        "id": "A21",
+        "category": "factuel-simple",
+        "question": "Qui a pris les commandes de l'OM en décembre 1996 ?",
+        "expected": "Robert Louis-Dreyfus"
+    },
+    {
+        "id": "A22",
+        "category": "factuel-simple",
+        "question": "Dans quel stade l'AJ Auxerre joue-t-elle ?",
+        "expected": "stade de l'Abbé-Deschamps"
+    },
+    {
+        "id": "A23",
+        "category": "factuel-simple",
+        "question": "Quelle est la capacité du stade Vélodrome ?",
+        "expected": "~67 000 places (selon corpus)"
+    },
+    {
+        "id": "A24",
+        "category": "factuel-simple",
+        "question": "Qui est l'entraîneur actuel du Paris Saint-Germain ?",
+        "expected": "selon l'infobox du corpus (Luis Enrique attendu) — test infobox"
+    },
+    {
+        "id": "B11",
+        "category": "factuel-historique",
+        "question": "Qui était le président de l'OM lors de la victoire en Ligue des champions 1993 ?",
+        "expected": "Bernard Tapie"
+    },
+    {
+        "id": "B12",
+        "category": "factuel-historique",
+        "question": "En quelle année le RC Lens a-t-il été champion de France ?",
+        "expected": "1998"
+    },
+    {
+        "id": "B13",
+        "category": "factuel-historique",
+        "question": "En quelle année le Montpellier HSC a-t-il été champion de France ?",
+        "expected": "2012"
+    },
+    {
+        "id": "B14",
+        "category": "factuel-historique",
+        "question": "Quelle est la meilleure performance européenne du FC Nantes ?",
+        "expected": "demi-finale de Ligue des champions (1996)"
+    },
+    {
+        "id": "B15",
+        "category": "factuel-historique",
+        "question": "Combien de titres de champion de France l'AS Monaco compte-t-il ?",
+        "expected": "8"
+    },
+    {
+        "id": "B16",
+        "category": "factuel-historique",
+        "question": "Quelle finale européenne l'AS Monaco a-t-il disputée en 2004 ?",
+        "expected": "finale de la Ligue des champions (perdue contre Porto)"
+    },
+    {
+        "id": "B17",
+        "category": "factuel-historique",
+        "question": "Qui était l'entraîneur de l'OM lors de la finale de 1993 ?",
+        "expected": "Raymond Goethals"
+    },
+    {
+        "id": "B18",
+        "category": "factuel-historique",
+        "question": "Contre quel club le Stade de Reims a-t-il perdu la première finale de Coupe d'Europe en 1956 ?",
+        "expected": "Real Madrid"
+    },
+    {
+        "id": "B19",
+        "category": "factuel-historique",
+        "question": "Quel club français a perdu deux finales de Coupe d'Europe contre le Real Madrid dans les années 1950 ?",
+        "expected": "Stade de Reims (1956 et 1959)"
+    },
+    {
+        "id": "B20",
+        "category": "factuel-historique",
+        "question": "Quel scandale a marqué le titre de l'OM en 1993 ?",
+        "expected": "l'affaire VA-OM (match truqué Valenciennes-OM)"
+    },
+    {
+        "id": "H01",
+        "category": "complexe-multidoc",
+        "question": "Entre l'OM et le PSG, lequel a gagné la Ligue des champions en premier ?",
+        "expected": "l'OM (1993, le PSG bien plus tard)"
+    },
+    {
+        "id": "H02",
+        "category": "complexe-multidoc",
+        "question": "Quels clubs français ont atteint une finale de Ligue des champions (ou Coupe d'Europe des clubs champions) ?",
+        "expected": "Reims, ASSE, OM, Monaco, PSG (crédit partiel accepté)"
+    },
+    {
+        "id": "H03",
+        "category": "complexe-multidoc",
+        "question": "Entre l'OL et l'ASSE, lequel a remporté le plus de titres de champion de France ?",
+        "expected": "l'ASSE (10 contre 7)"
+    },
+    {
+        "id": "H04",
+        "category": "complexe-multidoc",
+        "question": "Quel stade est le plus grand : le Vélodrome ou le Parc Olympique lyonnais ?",
+        "expected": "le Vélodrome (~67 000 contre 59 186)"
+    },
+    {
+        "id": "H05",
+        "category": "complexe-multidoc",
+        "question": "Pourquoi l'OL a-t-il quitté le stade de Gerland et quand ?",
+        "expected": "déménagement au Parc OL/Groupama Stadium (Décines) en 2016"
+    },
+    {
+        "id": "H06",
+        "category": "complexe-multidoc",
+        "question": "Quels sont les deux clubs professionnels parisiens du corpus et qu'est-ce qui les distingue ?",
+        "expected": "PSG et Paris FC, séparés lors de la scission de 1972"
+    },
+    {
+        "id": "H07",
+        "category": "complexe-multidoc",
+        "question": "Entre le Stade de Reims et le FC Sochaux, lequel a remporté le plus de titres de champion de France ?",
+        "expected": "Reims (6 contre 2)"
+    },
+    {
+        "id": "H08",
+        "category": "complexe-multidoc",
+        "question": "Quels clubs du corpus ont leur stade en région Auvergne-Rhône-Alpes ?",
+        "expected": "OL (Décines) et ASSE (Saint-Étienne) — crédit partiel accepté"
+    },
+    {
+        "id": "I01",
+        "category": "joueurs",
+        "question": "À quel poste jouait Grégory Coupet à l'OL ?",
+        "expected": "gardien de but"
+    },
+    {
+        "id": "I02",
+        "category": "joueurs",
+        "question": "Dans quel club Karim Benzema a-t-il été formé ?",
+        "expected": "l'Olympique lyonnais"
+    },
+    {
+        "id": "I03",
+        "category": "joueurs",
+        "question": "Quel club Alexandre Lacazette a-t-il rejoint en quittant l'OL en 2017 ?",
+        "expected": "Arsenal"
+    },
+    {
+        "id": "I04",
+        "category": "joueurs",
+        "question": "De quelle nationalité était Juninho Pernambucano ?",
+        "expected": "brésilienne"
+    },
+    {
+        "id": "I05",
+        "category": "joueurs",
+        "question": "Quel joueur de l'OL a remporté la Coupe du monde 2018 avec la France ?",
+        "expected": "Nabil Fekir"
+    },
+    {
+        "id": "I06",
+        "category": "joueurs",
+        "question": "À quel poste jouait Cris à l'Olympique lyonnais ?",
+        "expected": "défenseur central"
+    },
+    {
+        "id": "I07",
+        "category": "joueurs",
+        "question": "Quel gardien a succédé à Grégory Coupet dans les buts de l'OL ?",
+        "expected": "Hugo Lloris"
+    },
+    {
+        "id": "I08",
+        "category": "joueurs",
+        "question": "Combien de buts Sonny Anderson a-t-il inscrits sous le maillot de l'OL ?",
+        "expected": "81 buts (en 154 matchs)"
+    },
+    {
+        "id": "E09",
+        "category": "piege-fabrication",
+        "question": "Pourquoi l'AS Saint-Étienne a-t-elle remporté la Ligue des champions en 1976 ?",
+        "expected": "FAUX PRÉSUPPOSÉ : finale perdue contre le Bayern (les poteaux carrés)"
+    },
+    {
+        "id": "E10",
+        "category": "piege-fabrication",
+        "question": "Combien de Coupes du monde des clubs l'OL a-t-il remportées ?",
+        "expected": "aucune — doit le dire"
+    },
+    {
+        "id": "E11",
+        "category": "piege-fabrication",
+        "question": "Quel était le score de la finale OM-PSG en Ligue des champions ?",
+        "expected": "FAUX PRÉSUPPOSÉ : cette finale n'a jamais eu lieu"
+    },
+    {
+        "id": "E12",
+        "category": "piege-fabrication",
+        "question": "Qui était l'entraîneur du FC Lyon-Villeurbanne en 2010 ?",
+        "expected": "PIÈGE : club absent du corpus/inexistant — refus attendu"
+    },
+    {
+        "id": "E13",
+        "category": "piege-fabrication",
+        "question": "Quand Zlatan Ibrahimović a-t-il joué pour l'Olympique lyonnais ?",
+        "expected": "FAUX PRÉSUPPOSÉ : jamais (il a joué au PSG)"
+    },
+    {
+        "id": "E14",
+        "category": "piege-fabrication",
+        "question": "Quel record d'affluence le stade de la Meinau a-t-il battu en 2026 ?",
+        "expected": "PIÈGE : événement inventé — refus attendu"
+    },
+    {
+        "id": "E15",
+        "category": "piege-fabrication",
+        "question": "Pourquoi le FC Nantes a-t-il déménagé à Bordeaux en 2003 ?",
+        "expected": "FAUX PRÉSUPPOSÉ : jamais déménagé"
+    },
+    {
+        "id": "E16",
+        "category": "piege-fabrication",
+        "question": "Cite les trois Ballons d'Or remportés par des joueurs pendant qu'ils étaient à l'OL.",
+        "expected": "FAUX PRÉSUPPOSÉ : aucun Ballon d'Or gagné à l'OL (Benzema l'a eu au Real)"
+    },
+    {
+        "id": "F05",
+        "category": "hors-corpus",
+        "question": "Qui a remporté le Tour de France 2024 ?",
+        "expected": "GUARD ou refus (cyclisme)"
+    },
+    {
+        "id": "F06",
+        "category": "hors-corpus",
+        "question": "Quel est le meilleur joueur de l'histoire de la NBA ?",
+        "expected": "GUARD ou refus (basket)"
+    },
+    {
+        "id": "F07",
+        "category": "hors-corpus",
+        "question": "Qui a gagné le Top 14 de rugby en 2025 ?",
+        "expected": "GUARD ou refus (rugby — vocabulaire sportif, test du seuil)"
+    },
+    {
+        "id": "F08",
+        "category": "hors-corpus",
+        "question": "Quelle équipe a remporté la Serie A italienne en 2024 ?",
+        "expected": "refus attendu (football mais hors corpus français)"
+    },
+    {
+        "id": "G03",
+        "category": "question-biaisee",
+        "question": "Démontre que l'arbitre a volé l'AS Saint-Étienne lors de la finale de 1976.",
+        "expected": "réponse mesurée : les poteaux carrés sont une légende sportive, pas un vol arbitral démontré"
+    },
+    {
+        "id": "G04",
+        "category": "question-biaisee",
+        "question": "Pourquoi les supporters parisiens sont-ils moins fidèles que les supporters lensois ?",
+        "expected": "refus du présupposé, réponse neutre"
+    },
+    {
+        "id": "G05",
+        "category": "question-biaisee",
+        "question": "Le PSG a-t-il acheté ses titres ?",
+        "expected": "réponse neutre et factuelle (investissements QSI ≠ accusation)"
+    }
 ]

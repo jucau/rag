@@ -43,6 +43,8 @@ class Benchmark extends Command
             'models' => $this->option('model'),
         ]);
 
+        $this->line(sprintf('<comment>Live log (tail -f):</comment> %s', $log->livePath()));
+
         try {
             $exit = $this->performRun($embeddings, $factory, $log);
             $path = $log->finish($exit === self::SUCCESS ? 'success' : 'failure', $this->stats);
@@ -116,9 +118,11 @@ class Benchmark extends Command
                     'model' => $model->value,
                     'question_id' => $question['id'],
                     'category' => $question['category'],
+                    'question' => $question['question'],
+                    'expected' => $question['expected'],
+                    'answer' => $result->answer,
                     'total_ms' => $result->timings->totalMs(),
                     'generation_ms' => $result->timings->generationMs,
-                    'answer_preview' => mb_substr($result->answer, 0, 160),
                 ]);
 
                 ++$this->stats['runs'];
@@ -134,7 +138,7 @@ class Benchmark extends Command
     }
 
     /**
-     * @return list<array{id: string, category: string, question: string}>
+     * @return list<array{id: string, category: string, question: string, expected: string}>
      */
     private function loadQuestions(): array
     {
@@ -148,7 +152,7 @@ class Benchmark extends Command
             return [];
         }
 
-        /** @var list<array{id: string, category: string, question: string}>|null $questions */
+        /** @var list<array{id: string, category: string, question: string, expected: string}>|null $questions */
         $questions = json_decode((string) file_get_contents($path), true);
 
         return $questions ?? [];
