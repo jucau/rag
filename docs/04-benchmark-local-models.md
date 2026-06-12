@@ -120,12 +120,23 @@ failures point at the pipeline**.
    contextual re-chunking. The models that "failed honestly" said so;
    gemma3:4b invented an answer from the chunks it got. → retrieval
    issue to investigate (chunk ranking for that section).
-2. **Shared table misread (B04, E06)**: gemma3:4b and qwen3 both
-   hallucinated *"116 Ligues des champions"* for OM — the linearised
-   row of the *"Bilan par compétition"* table (116 = matches played)
-   is ambiguous once flattened. Same for Lens's European stats. →
-   the table linearisation (ADR-0015) should label numbers better
-   (e.g. include the column header units) — only llama read it right.
+2. **Shared number misuse (B04, E06)**: gemma3:4b and qwen3 both
+   hallucinated *"116 Ligues des champions"* for OM.
+
+   > **Erratum (2026-06-12).** The initial diagnosis blamed the
+   > linearised *"Bilan par compétition"* table. After expanding the
+   > abbreviated table headers (strategy 2026-06-12.1) the error
+   > persisted — inspection of the actual chunks showed the real
+   > source: **"capital social de 116,5 millions d'euros"** in the
+   > *Statut juridique* section, fused into a trophy count by the
+   > model. This is fabrication-by-assembly (gemma3:4b's signature
+   > failure mode), not a linearisation bug; the default model
+   > (llama3.2:3b, ADR-0019) answers the same question correctly on
+   > the same chunks. The header expansion remains in place as
+   > hardening — E06-style rows ("Perdus : 6" instead of "P : 6") are
+   > genuinely less ambiguous — and the lesson is methodological:
+   > **verify a diagnosis against the retrieved chunks, not against
+   > the model's own source citations** (models cite carelessly).
 3. **Threshold blind spot (F02, F04)**: Roland-Garros and the Premier
    League pass the 0.65 distance gate (football-adjacent vocabulary)
    and reach the model. Three models refused properly; gemma3:1b made
