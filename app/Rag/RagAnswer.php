@@ -25,26 +25,40 @@ final readonly class RagAnswer
      * the document it belongs to and its cosine distance to the question
      * (lower = more relevant; the threshold lives in rag.retrieval).
      *
-     * @return list<array{chunk_id: int, title: string, url: string, distance: float}>
+     * The position matches the "[Source N]" numbering of the generation
+     * prompt, so an answer citing "Source 3" refers to position 3.
+     * Chunk content is included on demand (UI display) but kept out of
+     * the rag_queries log, where chunks would only duplicate data.
+     *
+     * @return list<array{position: int, chunk_id: int, title: string, url: string, distance: float, content?: string}>
      */
-    public function sources(): array
+    public function sources(bool $withContent = false): array
     {
-        return self::sourcesFromChunks($this->chunks);
+        return self::sourcesFromChunks($this->chunks, $withContent);
     }
 
     /**
      * @param Collection<int, DocumentChunk> $chunks
-     * @return list<array{chunk_id: int, title: string, url: string, distance: float}>
+     * @return list<array{position: int, chunk_id: int, title: string, url: string, distance: float, content?: string}>
      */
-    public static function sourcesFromChunks(Collection $chunks): array
+    public static function sourcesFromChunks(Collection $chunks, bool $withContent = false): array
     {
         return array_values($chunks
-            ->map(fn (DocumentChunk $chunk): array => [
-                'chunk_id' => $chunk->id,
-                'title' => $chunk->document->title,
-                'url' => $chunk->document->url,
-                'distance' => round($chunk->neighbor_distance, 4),
-            ])
+            ->map(function (DocumentChunk $chunk, int $index) use ($withContent): array {
+                $source = [
+                    'position' => $index + 1,
+                    'chunk_id' => $chunk->id,
+                    'title' => $chunk->document->title,
+                    'url' => $chunk->document->url,
+                    'distance' => round($chunk->neighbor_distance, 4),
+                ];
+
+                if ($withContent) {
+                    $source['content'] = $chunk->content;
+                }
+
+                return $source;
+            })
             ->all());
     }
 }

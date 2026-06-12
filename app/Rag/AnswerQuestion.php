@@ -91,7 +91,7 @@ final readonly class AnswerQuestion
         [$chunks, $embeddingMs, $retrievalMs] = $this->retrieve($question);
 
         yield new RagStreamEvent(RagStreamEventType::Sources, [
-            'sources' => RagAnswer::sourcesFromChunks($chunks),
+            'sources' => RagAnswer::sourcesFromChunks($chunks, withContent: true),
         ]);
 
         $started = hrtime(true);

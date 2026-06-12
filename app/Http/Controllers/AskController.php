@@ -34,7 +34,7 @@ class AskController extends Controller
         return response()->json([
             'answer' => $result->answer,
             'provider' => $result->provider,
-            'sources' => $result->sources(),
+            'sources' => $result->sources(withContent: true),
             'timings' => [
                 'embedding_ms' => $result->timings->embeddingMs,
                 'retrieval_ms' => $result->timings->retrievalMs,

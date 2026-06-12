@@ -39,7 +39,7 @@ function Sources({ sources }) {
 
     return (
         <div className="mt-3 border-t border-slate-700 pt-2 text-xs text-slate-400">
-            <span className="font-semibold">Sources :</span>
+            <span className="font-semibold">Articles :</span>
             <ul className="mt-1 space-y-0.5">
                 {documents.map((source) => (
                     <li key={source.url}>
@@ -54,6 +54,33 @@ function Sources({ sources }) {
                     </li>
                 ))}
             </ul>
+
+            {sources.some((s) => s.content) && (
+                <div className="mt-2">
+                    <span className="font-semibold">
+                        Passages utilisés (les « Source N » de la réponse) :
+                    </span>
+                    <ul className="mt-1 space-y-1">
+                        {sources.map((source) => (
+                            <li key={source.chunk_id}>
+                                <details className="group rounded-lg border border-slate-700/60 bg-slate-900/60">
+                                    <summary className="cursor-pointer select-none px-2.5 py-1.5 text-slate-300 hover:text-emerald-400">
+                                        <span className="font-medium">Source {source.position}</span>
+                                        {' — '}
+                                        {source.title}
+                                        <span className="ml-1 text-slate-500">
+                                            · distance {source.distance.toFixed(2)}
+                                        </span>
+                                    </summary>
+                                    <pre className="max-h-56 overflow-y-auto whitespace-pre-wrap border-t border-slate-700/60 px-2.5 py-2 font-sans text-[11px] leading-relaxed text-slate-400">
+                                        {source.content}
+                                    </pre>
+                                </details>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
         </div>
     );
 }
