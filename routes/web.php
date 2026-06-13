@@ -13,12 +13,18 @@ use Inertia\Response;
 
 Route::get('/', function (): Response {
     // The OllamaModel enum is the single source of truth for the model
-    // selector — the frontend never hardcodes model names.
+    // selector — the frontend never hardcodes model names. The configured
+    // default model is moved first so the selector opens on it (the front
+    // selects index 0); the stable sort keeps the enum order otherwise.
+    $default = config()->string('rag.chat.ollama.model');
+    $cases = OllamaModel::cases();
+    usort($cases, fn (OllamaModel $a, OllamaModel $b): int => ($b->value === $default) <=> ($a->value === $default));
+
     $models = array_map(fn (OllamaModel $model): array => [
         'provider' => ChatProviderName::Ollama->value,
         'model' => $model->value,
         'label' => $model->label(),
-    ], OllamaModel::cases());
+    ], $cases);
 
     $models[] = [
         'provider' => ChatProviderName::Claude->value,

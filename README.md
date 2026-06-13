@@ -7,10 +7,11 @@ articles**, with sources — something a bare LLM cannot do.
 
 Everything runs locally in Docker: PostgreSQL + pgvector as the vector
 store, Ollama for embeddings and generation (Claude available as an
-alternative), Laravel 13 + Inertia/React for the chat UI.
+alternative), Laravel 13 + Inertia/React for the chat UI. Generation can
+optionally run on a host-native Ollama for the GPU (see below).
 
 > 📚 **This project is documentation-first.** The concepts (chunking,
-> embeddings, retrieval, grounding…), every architecture decision (21
+> embeddings, retrieval, grounding…), every architecture decision (22
 > ADRs) and the quality/benchmark reports live in [docs/](docs/README.md).
 
 ## Quickstart
@@ -41,6 +42,47 @@ docker compose exec app php artisan rag:ask "Qui est l'entraîneur de l'OM ?"
 open http://localhost:8000
 ```
 
+## Local AI models (Ollama)
+
+The RAG uses two kinds of local model, both served by Ollama:
+
+| Role | Model | Size | Required? |
+|---|---|---|---|
+| **Embeddings** | `embeddinggemma` | ~620 MB | ✅ yes — turns text into the 768-dim vectors stored in pgvector |
+| **Generation (default)** | `llama3.2:3b` | ~2 GB | ✅ yes — writes the answers (best model of the [benchmark](docs/05-benchmark-103-questions.md)) |
+| Generation (alternative) | `gemma3:4b` | ~3.3 GB | optional — offered in the chat UI selector |
+| Benchmark only | `gemma3:1b`, `qwen3:1.7b` | ~0.8 / 1.4 GB | optional — only for `rag:benchmark` |
+
+`make setup` (and `make ollama-pull`) pulls the first three into the
+**dockerised** Ollama automatically — nothing to install on the host.
+The two benchmark-only models are pulled on demand:
+
+```bash
+docker compose exec ollama ollama pull gemma3:1b
+docker compose exec ollama ollama pull qwen3:1.7b
+```
+
+### Optional: generation on the host GPU (~3× faster)
+
+Docker on macOS has no access to the Metal GPU, so the dockerised
+Ollama generates on CPU (~8.6s/answer). To use your Mac's GPU instead,
+run Ollama **natively on the host** and point generation at it
+([ADR-0022](docs/adr/0022-host-ollama-for-generation.md)) — embeddings
+stay on the dockerised Ollama:
+
+```bash
+# On the host (not in Docker): install Ollama from https://ollama.com
+# then pull the generation model into the host Ollama
+ollama pull llama3.2:3b
+
+# Then uncomment this line in your .env (already wired in compose):
+# OLLAMA_CHAT_URL=http://host.docker.internal:11434
+docker compose exec app php artisan config:clear
+```
+
+Warm generation drops to ~2.5s. This is opt-in: leave `OLLAMA_CHAT_URL`
+commented and the stack stays fully dockerised.
+
 ## Useful commands
 
 | Command | What it does |
@@ -53,7 +95,7 @@ open http://localhost:8000
 | `make testing` | Test suite |
 | `make shell` | Shell inside the app container |
 | `php artisan rag:ask "…" --provider=claude --model=…` | Query with a specific provider/model |
-| `php artisan rag:benchmark` | Run the 50-question benchmark across local models |
+| `php artisan rag:benchmark` | Run the 103-question benchmark across local models |
 
 Batch runs export structured JSON logs to `storage/rag-runs/`; every
 question is logged with timings and sources in the `rag_queries` table.
@@ -72,7 +114,7 @@ question is logged with timings and sources in the `rag_queries` table.
 
 - [Project overview](docs/01-project-overview.md) — why RAG, the architecture, the hybrid local/API pattern
 - [The RAG pipeline](docs/02-rag-pipeline.md) — ingestion, chunking, retrieval, generation, performance
-- [Answer quality](docs/03-answer-quality.md) & [model benchmark](docs/04-benchmark-local-models.md)
+- [Answer quality](docs/03-answer-quality.md) & model benchmark ([v1, 50 q](docs/04-benchmark-local-models.md) · [v2, 103 q](docs/05-benchmark-103-questions.md))
 - [ADRs](docs/adr/README.md) — every decision with its context and trade-offs
 - [Glossary](docs/glossary.md)
 
