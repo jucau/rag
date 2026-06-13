@@ -15,6 +15,7 @@ is recorded.
 | [Answer quality](03-answer-quality.md) | Audits of real answers, failure taxonomy, improvements |
 | [Local model benchmark v1](04-benchmark-local-models.md) | The 50-question × 4-model evaluation and its full analysis |
 | [Local model benchmark v2](05-benchmark-103-questions.md) | The 103-question follow-up: full matrix, category scores, verdict |
+| [Local model benchmark v3](06-benchmark-v3-enriched-corpus.md) | Re-run on the enriched + de-noised corpus: the gap closes |
 | [Glossary](glossary.md) | Every key concept explained in a few sentences |
 | [Architecture Decision Records](adr/README.md) | Why we chose Docker, pgvector, Ollama, Claude, etc. |
 
