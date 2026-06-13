@@ -62,26 +62,37 @@ docker compose exec ollama ollama pull gemma3:1b
 docker compose exec ollama ollama pull qwen3:1.7b
 ```
 
-### Optional: generation on the host GPU (~3× faster)
+### Optional: run on the host GPU (much faster)
 
 Docker on macOS has no access to the Metal GPU, so the dockerised
-Ollama generates on CPU (~8.6s/answer). To use your Mac's GPU instead,
-run Ollama **natively on the host** and point generation at it
-([ADR-0022](docs/adr/0022-host-ollama-for-generation.md)) — embeddings
-stay on the dockerised Ollama:
+Ollama runs on CPU (generation ~8.6s/answer, embedding ~1.7s/chunk).
+To use your Mac's GPU instead, run Ollama **natively on the host** and
+point the RAG at it. Two opt-in URLs, independent:
+
+- `OLLAMA_CHAT_URL` → host generation, ~3× faster
+  ([ADR-0022](docs/adr/0022-host-ollama-for-generation.md))
+- `OLLAMA_EMBED_URL` → host embeddings, much faster (re-)ingestion
+  ([ADR-0023](docs/adr/0023-host-ollama-for-embeddings.md))
 
 ```bash
 # On the host (not in Docker): install Ollama from https://ollama.com
-# then pull the generation model into the host Ollama
-ollama pull llama3.2:3b
+ollama pull llama3.2:3b      # generation model
+ollama pull embeddinggemma   # embedding model
 
-# Then uncomment this line in your .env (already wired in compose):
+# Uncomment in your .env (both already wired in compose):
 # OLLAMA_CHAT_URL=http://host.docker.internal:11434
+# OLLAMA_EMBED_URL=http://host.docker.internal:11434
 docker compose exec app php artisan config:clear
+
+# Embeddings: re-embed the corpus on the host so stored chunks and
+# query vectors share one space (the two embeddinggemma instances agree
+# to cosine 0.99999, but this keeps it strictly consistent — ADR-0006)
+docker compose exec app php artisan rag:index --force
 ```
 
-Warm generation drops to ~2.5s. This is opt-in: leave `OLLAMA_CHAT_URL`
-commented and the stack stays fully dockerised.
+Both are opt-in: leave the URLs commented and the stack stays fully
+dockerised (CPU). You can enable just generation, just embeddings, or
+both.
 
 ## Useful commands
 

@@ -33,3 +33,4 @@ the time the choice is made.
 | [0020](0020-split-fetch-and-index.md) | Split ingestion into fetch and index, with hash-based staleness | Accepted |
 | [0021](0021-structured-execution-logs.md) | Structured execution logs for batch commands | Accepted |
 | [0022](0022-host-ollama-for-generation.md) | Host-native Ollama for generation (Metal GPU) | Accepted |
+| [0023](0023-host-ollama-for-embeddings.md) | Host-native Ollama for embeddings too (Metal GPU) | Accepted |

@@ -21,7 +21,12 @@ return [
         'dimensions' => (int) env('RAG_EMBEDDINGS_DIMENSIONS', 768),
 
         'ollama' => [
-            'url' => env('OLLAMA_URL', 'http://ollama:11434'),
+            // Embeddings can target the host's native Ollama too
+            // (ADR-0023): the Metal GPU makes (re-)ingestion far faster.
+            // The corpus must then be re-embedded on the host so stored
+            // chunks and query vectors share one space (ADR-0006).
+            // Falls back to OLLAMA_URL (the dockerised Ollama).
+            'url' => env('OLLAMA_EMBED_URL', env('OLLAMA_URL', 'http://ollama:11434')),
             'model' => env('OLLAMA_EMBEDDING_MODEL', 'embeddinggemma'),
         ],
     ],
