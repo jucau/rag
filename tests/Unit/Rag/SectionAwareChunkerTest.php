@@ -44,6 +44,30 @@ final class SectionAwareChunkerTest extends TestCase
     }
 
     #[Test]
+    public function boilerplate_end_matter_sections_are_dropped_but_the_intro_is_kept(): void
+    {
+        $text = "Hugo Lloris est un gardien français.\n\n"
+            . "== Carrière ==\nFormé à Nice, il rejoint l'OL en 2008.\n\n"
+            . "== Liens externes ==\nSite officiel\n\n"
+            . "== Bibliographie sur le club ==\nUn livre\n\n"
+            . "== Notes et références ==\nCet article est issu de…\n\n"
+            . "== Articles connexes ==\nListe des joueurs de l'OL";
+
+        $chunks = $this->chunker->chunk('Hugo Lloris', $text);
+
+        // Only the intro and the real "Carrière" section survive.
+        $this->assertCount(2, $chunks);
+        $this->assertStringStartsWith("[Article : Hugo Lloris]\n", $chunks[0]);
+        $this->assertStringStartsWith("[Article : Hugo Lloris — Section : Carrière]\n", $chunks[1]);
+
+        $joined = implode("\n", $chunks);
+        $this->assertStringNotContainsString('Liens externes', $joined);
+        $this->assertStringNotContainsString('Bibliographie', $joined);
+        $this->assertStringNotContainsString('Notes et références', $joined);
+        $this->assertStringNotContainsString('Articles connexes', $joined);
+    }
+
+    #[Test]
     public function sub_headings_become_the_current_section(): void
     {
         $text = "== Histoire ==\nLes débuts.\n\n=== Années 2000 ===\nLa décennie dorée.";

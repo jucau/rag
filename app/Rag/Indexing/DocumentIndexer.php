@@ -32,8 +32,11 @@ final readonly class DocumentIndexer
      *   (sub-table sections were misaligned: the REAL "Titres : 116"
      *   bug, found by Julien in the chunks), and cell splitting/attribute
      *   stripping ignore pipes inside templates ({{fc|or}} debris).
+     * - 2026-06-13.1 = drop boilerplate end-matter sections (Liens
+     *   externes, Bibliographie, Articles connexes, Notes et références…)
+     *   — ~4.5% of chunks were pure noise (ADR-0024).
      */
-    public const string VERSION = '2026-06-12.2';
+    public const string VERSION = '2026-06-13.1';
 
     /**
      * How many chunks are embedded per Ollama call.

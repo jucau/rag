@@ -16,6 +16,20 @@ namespace App\Rag\Chunking;
  */
 final readonly class SectionAwareChunker
 {
+    /**
+     * Wikipedia end-matter sections that are reliably boilerplate
+     * (external links, bibliography, cross-references, attribution
+     * notes…) — pure noise for a football RAG (ADR-0024). Matched as a
+     * normalised prefix, so "Bibliographie sur Le Havre AC" and
+     * "Références extraites d'ouvrages" are caught too. The intro
+     * (null section) is never dropped — it usually holds the key facts.
+     */
+    private const array IGNORED_SECTION_PREFIXES = [
+        'liens externes', 'bibliographie', 'articles connexes',
+        'notes et références', 'références', 'sources', 'voir aussi',
+        'annexes', 'notes',
+    ];
+
     public function __construct(private TextChunker $chunker)
     {
     }
@@ -28,6 +42,10 @@ final readonly class SectionAwareChunker
         $chunks = [];
 
         foreach ($this->splitIntoSections($text) as [$section, $content]) {
+            if ($this->isIgnoredSection($section)) {
+                continue;
+            }
+
             $header = $section === null
                 ? sprintf('[Article : %s]', $articleTitle)
                 : sprintf('[Article : %s — Section : %s]', $articleTitle, $section);
@@ -38,6 +56,16 @@ final readonly class SectionAwareChunker
         }
 
         return $chunks;
+    }
+
+    private function isIgnoredSection(?string $section): bool
+    {
+        if ($section === null) {
+            return false;
+        }
+
+        $normalized = mb_strtolower(trim($section));
+        return array_any(self::IGNORED_SECTION_PREFIXES, fn ($prefix): bool => str_starts_with($normalized, (string) $prefix));
     }
 
     /**

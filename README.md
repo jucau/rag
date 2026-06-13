@@ -78,6 +78,8 @@ point the RAG at it. Two opt-in URLs, independent:
 # On the host (not in Docker): install Ollama from https://ollama.com
 ollama pull llama3.2:3b      # generation model
 ollama pull embeddinggemma   # embedding model
+# For the benchmark on the host, pull its other models there too:
+# ollama pull gemma3:4b gemma3:1b qwen3:1.7b
 
 # Uncomment in your .env (both already wired in compose):
 # OLLAMA_CHAT_URL=http://host.docker.internal:11434
