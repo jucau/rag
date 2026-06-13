@@ -33,7 +33,7 @@ final readonly class ChatProviderFactory
             ?? OllamaModel::Llama32_3B;
 
         return new OllamaChatProvider(
-            baseUrl: config()->string('rag.embeddings.ollama.url'),
+            baseUrl: config()->string('rag.chat.ollama.url'),
             model: $model->value,
             // The enum knows its model (qwen3 must not think on CPU);
             // the env option remains an explicit override.

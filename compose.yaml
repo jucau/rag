@@ -4,6 +4,11 @@ services:
     build: docker/php
     volumes:
       - .:/var/www/html
+    extra_hosts:
+      # Generation targets the host's native Ollama (Metal GPU, ADR-0022)
+      # via host.docker.internal — explicit for Docker Desktop portability
+      # (OrbStack provides it out of the box).
+      - "host.docker.internal:host-gateway"
     depends_on:
       db:
         condition: service_healthy

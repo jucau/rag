@@ -41,6 +41,11 @@ return [
         'provider' => env('RAG_CHAT_PROVIDER', 'ollama'),
 
         'ollama' => [
+            // Generation can target a different Ollama than embeddings
+            // (ADR-0022): the host's native Ollama gets the Metal GPU,
+            // while embeddings stay on the pinned, reproducible
+            // dockerised Ollama. Falls back to the embeddings URL.
+            'url' => env('OLLAMA_CHAT_URL', env('OLLAMA_URL', 'http://ollama:11434')),
             'model' => env('OLLAMA_CHAT_MODEL', 'llama3.2:3b'),
             // For thinking models (qwen3…): false disables the reasoning
             // phase (faster), true forces it. Leave unset for models

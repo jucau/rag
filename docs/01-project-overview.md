@@ -68,9 +68,12 @@ convenience:
 ### A note on Docker and GPUs (macOS)
 
 Docker on macOS runs in a VM and has **no access to the Apple Metal GPU**.
-For embeddings this is irrelevant — CPU inference is fast enough. If this
-project ever did local *generation*, running Ollama natively on the host
-(with Metal) would be the escape hatch — at the cost of the Docker-only rule.
+For embeddings this is irrelevant — CPU inference is fast enough. For
+*generation* (the latency bottleneck), the escape hatch is to run Ollama
+natively on the host (with Metal) — now exercised in
+[ADR-0022](adr/0022-host-ollama-for-generation.md): generation targets
+the host Ollama (`OLLAMA_CHAT_URL`, ~3× faster), embeddings stay on the
+dockerised one. Opt-in — the default stack remains fully Docker.
 
 ## Services
 
@@ -79,5 +82,5 @@ project ever did local *generation*, running Ollama natively on the host
 | `nginx` | `nginx:1.28-alpine` | 8000 | HTTP entry point (static assets + FastCGI to FPM) |
 | `app` | PHP-FPM 8.5 (Alpine) | 9000 (internal) | Laravel application |
 | `db` | `pgvector/pgvector:pg17` | 5432 | Relational data + vector store |
-| `ollama` | `ollama/ollama` | 11434 | Local embedding & generation inference |
+| `ollama` | `ollama/ollama` | 11434 | Local embedding inference (generation can move to the host Ollama — [ADR-0022](adr/0022-host-ollama-for-generation.md)) |
 | `node` | `node:22-alpine` | 5173 | Vite dev server (chat UI build) |
