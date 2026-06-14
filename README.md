@@ -109,7 +109,8 @@ both.
 | `make shell` | Shell inside the app container |
 | `php artisan rag:ask "…" --provider=claude --model=…` | Query with a specific provider/model |
 | `php artisan rag:benchmark` | Run the 103-question benchmark across local models |
-| `php artisan rag:retrieval-eval` | Score retrieval alone (recall@k, MRR) — no generation model loaded |
+| `php artisan rag:retrieval-eval` | Score retrieval alone (recall@k, MRR; document- and fact-level) — no generation model |
+| `php artisan rag:generation-eval` | Score generation conditioned on retrieval (conversion, over-refusal, misread) |
 
 Batch runs export structured JSON logs to `storage/rag-runs/`; every
 question is logged with timings and sources in the `rag_queries` table.

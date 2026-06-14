@@ -17,6 +17,7 @@ is recorded.
 | [Local model benchmark v2](05-benchmark-103-questions.md) | The 103-question follow-up: full matrix, category scores, verdict |
 | [Local model benchmark v3](06-benchmark-v3-enriched-corpus.md) | Re-run on the enriched + de-noised corpus: the gap closes |
 | [Retrieval metrics](07-retrieval-metrics.md) | recall@k / MRR: measuring the context, not the answer — retrieval is already ≈ 95 % |
+| [Generation & fact-level recall](08-generation-and-fact-level.md) | Where the pipeline really loses points: misread > over-refusal; and how lenient recall@5 was (zero at top-5) |
 | [Glossary](glossary.md) | Every key concept explained in a few sentences |
 | [Architecture Decision Records](adr/README.md) | Why we chose Docker, pgvector, Ollama, Claude, etc. |
 

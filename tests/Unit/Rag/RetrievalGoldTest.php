@@ -65,6 +65,24 @@ final class RetrievalGoldTest extends TestCase
     }
 
     #[Test]
+    public function answer_keys_cover_exactly_the_judged_questions(): void
+    {
+        /** @var array{keys: array<string, list<string>>} $decoded */
+        $decoded = json_decode((string) file_get_contents(dirname(__DIR__, 3) . '/benchmark/answer-keys.json'), true);
+        $keys = $decoded['keys'];
+
+        $this->assertSame(
+            array_keys($this->gold()),
+            array_keys($keys),
+            'answer-keys.json must judge exactly the same questions as retrieval-gold.json.',
+        );
+
+        foreach ($keys as $id => $aliases) {
+            $this->assertNotEmpty($aliases, sprintf('Answer key "%s" has no alias.', $id));
+        }
+    }
+
+    #[Test]
     public function trap_off_corpus_and_biased_questions_are_intentionally_unjudged(): void
     {
         $gold = $this->gold();

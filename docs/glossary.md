@@ -108,12 +108,23 @@ relational database we already use into a vector store.
 implements: retrieve passages relevant to a question from a document
 store, then have an LLM generate an answer grounded in those passages.
 
+**Over-refusal / misread** — The two generation failure modes when the
+answer *was* in the context (ADR-0026). **Over-refusal**: the model
+declines a question it could have answered. **Misread**: it answers
+wrong despite the fact being present — usually grabbing a *competing*
+fact from the context. In this project misread dominates (≈ 10/70) and
+over-refusal is rare (≈ 1/70), overturning the v3 guess.
+
 **Recall@k** — A retrieval metric: the share of questions for which at
 least one relevant document appears in the top-k retrieved chunks.
 `recall@5` is what the generator actually sees in this project;
 `recall@20` is the ceiling a reranker pulling from a deeper pool could
 reach. It measures *coverage* (is the answer there at all?), not
 *ranking quality* — see [MRR](#). Ours is ≈ 95 % at k=5 (ADR-0025).
+Reported at two granularities: **document-level** (right article
+retrieved) and **fact-level** (a retrieved chunk's content states the
+answer); the gap measures how lenient document-level judging is — large
+at rank 1 (−17.6 pts), zero at the top-5 here (ADR-0026).
 
 **Retrieval** — The query-time step that finds the top-k chunks closest
 to the question's embedding.
