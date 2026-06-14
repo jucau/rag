@@ -35,3 +35,4 @@ the time the choice is made.
 | [0022](0022-host-ollama-for-generation.md) | Host-native Ollama for generation (Metal GPU) | Accepted |
 | [0023](0023-host-ollama-for-embeddings.md) | Host-native Ollama for embeddings too (Metal GPU) | Accepted |
 | [0024](0024-drop-boilerplate-sections.md) | Drop boilerplate end-matter sections at chunking | Accepted |
+| [0025](0025-measure-retrieval-separately.md) | Measure retrieval quality separately (recall@k, MRR) | Accepted |

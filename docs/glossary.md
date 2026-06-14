@@ -50,6 +50,13 @@ retrieved chunks injected into its prompt.
 the system prompt; the antidote to hallucination — though a grounded
 answer is only as fresh and complete as the retrieved context.
 
+**Ground truth (relevance judgments / qrels)** — The hand-labelled
+"right answer" an evaluation is scored against. For *retrieval* it is,
+for each question, the document(s) that actually hold the answer
+(`benchmark/retrieval-gold.json`, judged at the document level so it
+survives re-chunking). Without it you cannot compute [recall@k](#) or
+[MRR](#) — you can only eyeball the answer text (ADR-0025).
+
 **Hallucination** — A confident but fabricated LLM answer (e.g. our
 local model inventing coach "Pierre Saint-Maximin"). Frequent on small
 models and on facts past the training cutoff; the problem RAG exists to
@@ -79,6 +86,13 @@ components of a vector, so it can be truncated (e.g. 768 → 256
 dimensions) with little quality loss. Only valid within the same model.
 `embeddinggemma` supports it.
 
+**MRR (Mean Reciprocal Rank)** — A retrieval metric: for each question,
+take `1 / rank` of the *first* relevant chunk (rank 1 → 1.0, rank 5 →
+0.2, never found → 0), then average over all questions. Unlike
+[recall@k](#) it rewards ranking the right chunk *high*, not merely
+having it somewhere in the top-k — so it is the metric a reranker tries
+to lift. Our corpus scores ≈ 0.89 (ADR-0025).
+
 **Ollama** — A local inference server. Runs open-weight models on your
 machine and exposes them over a simple REST API (`/api/embed` for
 embeddings). Runs as a Docker service in this project.
@@ -93,6 +107,13 @@ relational database we already use into a vector store.
 **RAG (Retrieval-Augmented Generation)** — The technique this project
 implements: retrieve passages relevant to a question from a document
 store, then have an LLM generate an answer grounded in those passages.
+
+**Recall@k** — A retrieval metric: the share of questions for which at
+least one relevant document appears in the top-k retrieved chunks.
+`recall@5` is what the generator actually sees in this project;
+`recall@20` is the ceiling a reranker pulling from a deeper pool could
+reach. It measures *coverage* (is the answer there at all?), not
+*ranking quality* — see [MRR](#). Ours is ≈ 95 % at k=5 (ADR-0025).
 
 **Retrieval** — The query-time step that finds the top-k chunks closest
 to the question's embedding.
