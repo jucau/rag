@@ -7,7 +7,7 @@ namespace Tests\Feature;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-final class ExampleTest extends TestCase
+final class ChatPageTest extends TestCase
 {
     #[Test]
     public function the_home_page_renders_the_chat(): void

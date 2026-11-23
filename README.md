@@ -137,6 +137,6 @@ Conventions for contributors (and AI agents): [LLM.md](LLM.md).
 
 ## License & data
 
-Code under MIT. The corpus is fetched from [Wikipedia](https://fr.wikipedia.org)
+Code under [MIT](LICENSE). The corpus is fetched from [Wikipedia](https://fr.wikipedia.org)
 (CC BY-SA): every stored document keeps its source URL, and answers cite
 their sources.
